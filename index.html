@@ -1,0 +1,2521 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#140d12">
+<meta name="description" content="누군가의 아이폰을 열어보는 인터랙티브 웹페이지">
+<title>iPhone</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Grand+Hotel&family=Noto+Sans+KR:wght@500;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;-webkit-tap-highlight-color:transparent;text-align:inherit}
+ul{list-style:none}
+:root{
+  --font:-apple-system,BlinkMacSystemFont,"SF Pro Text","Apple SD Gothic Neo","Pretendard","Noto Sans KR","Malgun Gothic",sans-serif;
+  --display:"SF Pro Rounded","SF Pro Display",-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+  --blue:#0a84ff;--pink:#ff5c8a;--sys:#f2f2f7;--sep:rgba(60,60,67,.18);--label2:rgba(60,60,67,.6)
+}
+html,body{height:100%}
+body{font-family:var(--font);background:radial-gradient(120% 80% at 50% 0%,#3a2433 0%,#140d12 65%);color:#fff;display:flex;align-items:center;justify-content:center;overflow:hidden;-webkit-font-smoothing:antialiased;-webkit-user-select:none;user-select:none;touch-action:manipulation;overscroll-behavior:none}
+input{-webkit-user-select:text;user-select:text}
+
+/* ---------- Device ---------- */
+.device{position:relative;width:390px;height:844px;flex:none;transform:scale(var(--s,1))}
+.phone{position:absolute;inset:0;border-radius:56px;overflow:hidden;background:#000;isolation:isolate;box-shadow:0 0 0 10px #0c0c0d,0 0 0 12px #4a434c,0 0 0 13px #1b1a1c,0 50px 100px -20px rgba(0,0,0,.75)}
+.side{position:absolute;width:4px;background:#4a434c;border-radius:2px}
+.side.power{right:-17px;top:230px;height:100px;cursor:pointer}
+.side.action{left:-17px;top:130px;height:32px}
+.side.v1{left:-17px;top:190px;height:60px}
+.side.v2{left:-17px;top:265px;height:60px}
+.island{position:absolute;top:11px;left:50%;translate:-50% 0;width:122px;height:36px;background:#000;border-radius:20px;z-index:100}
+@media (max-width:500px){
+  body{background:#000}
+  .device{width:100vw;height:100dvh;transform:none}
+  .phone{border-radius:0;box-shadow:none}
+  .side,.island{display:none}
+}
+
+/* ---------- System chrome ---------- */
+.statusbar{position:absolute;top:0;left:0;right:0;height:54px;padding:18px 28px 0 42px;display:flex;justify-content:space-between;align-items:center;z-index:90;font-weight:600;font-size:16px;color:#fff;transition:color .3s,opacity .3s;pointer-events:none}
+.sb-time{width:62px;text-align:center;letter-spacing:-.2px}
+.sb-icons{display:flex;gap:6px;align-items:center}
+.phone.dark-ui .statusbar{color:#000}
+.phone[data-screen="s-name"] .statusbar,.phone[data-screen="s-off"] .statusbar{opacity:0}
+.phone[data-screen="s-lock"] .sb-time{opacity:0}
+.homebar{position:absolute;bottom:0;left:50%;translate:-50% 0;width:220px;height:34px;z-index:95;display:flex;align-items:flex-end;justify-content:center;padding-bottom:8px;touch-action:none;cursor:pointer}
+.homebar::before{content:"";width:136px;height:5px;border-radius:3px;background:#fff;transition:background .3s}
+.phone.dark-ui .homebar::before{background:#000}
+.phone[data-screen="s-name"] .homebar,.phone[data-screen="s-off"] .homebar{display:none}
+.toast{position:absolute;top:62px;left:50%;translate:-50% -16px;opacity:0;z-index:99;background:rgba(28,28,30,.85);color:#fff;font-size:14px;font-weight:500;padding:10px 16px;border-radius:999px;-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);transition:opacity .3s,translate .3s;pointer-events:none;white-space:nowrap}
+.toast.show{opacity:1;translate:-50% 0}
+
+/* ---------- Screens ---------- */
+.screen{position:absolute;inset:0;opacity:0;visibility:hidden;transition:opacity .45s ease,visibility 0s .45s}
+.screen.active{opacity:1;visibility:visible;transition:opacity .45s ease}
+.wall{position:absolute;inset:-2px;background-image:url('wallpaper.jpg');background-size:cover;background-position:center}
+.wall::after{content:"";position:absolute;inset:0;background:radial-gradient(30% 18% at 70% 22%,rgba(255,255,255,.35),transparent 70%);animation:glow 9s ease-in-out infinite alternate}
+@keyframes glow{to{transform:translate(-40px,60px) scale(1.2);opacity:.6}}
+
+/* Name */
+#s-name{background:radial-gradient(90% 60% at 50% 28%,#45263f,#0b0709 75%);display:flex;flex-direction:column;justify-content:center;padding:0 30px;gap:14px}
+.name-heart{width:46px;height:46px;border-radius:14px;display:grid;place-items:center;background:rgba(255,92,138,.16);color:var(--pink);margin-bottom:6px}
+#s-name h1{font-size:28px;line-height:1.3;font-weight:700;letter-spacing:-.4px}
+#s-name p{font-size:15px;line-height:1.5;color:rgba(255,255,255,.6)}
+#nameForm{display:flex;flex-direction:column;gap:10px;margin-top:18px}
+#nameInput{height:54px;border-radius:14px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);color:#fff;font:inherit;font-size:18px;padding:0 18px;outline:none;transition:border-color .2s}
+#nameInput:focus{border-color:var(--pink)}
+#nameInput::placeholder{color:rgba(255,255,255,.35)}
+.btn-primary{height:54px;border-radius:14px;background:var(--pink);color:#fff;font-size:17px;font-weight:600;text-align:center;transition:transform .15s,filter .15s}
+.btn-primary:active{transform:scale(.98);filter:brightness(.92)}
+
+/* Off */
+#s-off{background:#000;cursor:pointer}
+.off-hint{position:absolute;left:0;right:0;bottom:120px;text-align:center;font-size:14px;color:rgba(255,255,255,.4);animation:breathe 2.4s ease-in-out infinite}
+@keyframes breathe{50%{opacity:.25}}
+
+/* Lock */
+#s-lock{touch-action:none;cursor:grab}
+#s-lock.active{animation:wake .8s ease-out}
+@keyframes wake{from{filter:brightness(0)}}
+.lock-inner{position:absolute;inset:0;will-change:transform;transition:transform .35s cubic-bezier(.2,.9,.3,1),opacity .35s}
+.lock-top{position:absolute;top:56px;left:0;right:0;text-align:center;text-shadow:0 1px 14px rgba(60,10,40,.25)}
+.lock-top>svg{display:block;margin:0 auto 10px;opacity:.95}
+.lock-date{font-size:20px;font-weight:600;opacity:.92}
+.lock-time{font-family:var(--display);font-size:98px;font-weight:700;letter-spacing:-3px;line-height:1;margin-top:2px;font-variant-numeric:tabular-nums}
+.lock-widget{display:none!important;margin-top:12px;align-items:center;gap:6px;font-size:15px;font-weight:600;padding:6px 13px;border-radius:999px;background:rgba(255,255,255,.2);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+.lock-widget svg{color:#fff}
+.notifs{position:absolute;left:10px;right:10px;top:300px;bottom:118px;display:flex;flex-direction:column;justify-content:flex-end;gap:8px;overflow:hidden;-webkit-mask-image:linear-gradient(to bottom,transparent 0,#000 48px);mask-image:linear-gradient(to bottom,transparent 0,#000 48px)}
+.notif{flex:none;display:flex;gap:10px;align-items:center;width:100%;padding:12px 14px;border-radius:22px;background:rgba(252,242,247,.6);-webkit-backdrop-filter:blur(24px) saturate(1.6);backdrop-filter:blur(24px) saturate(1.6);color:#1c1c1e;animation:notifIn .65s cubic-bezier(.2,.9,.3,1.15) both}
+@keyframes notifIn{from{opacity:0;transform:translateY(70px) scale(.94)}}
+.notif .ic{width:38px;height:38px;border-radius:9px}
+.notif-body{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
+.notif-head{display:flex;justify-content:space-between;gap:8px;font-size:15px}
+.notif-head time{font-size:13px;color:rgba(60,60,67,.65);flex:none}
+.notif-text{font-size:15px;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.lock-bottom{position:absolute;left:46px;right:46px;bottom:46px;display:flex;justify-content:space-between;align-items:center}
+.round-btn{width:50px;height:50px;border-radius:50%;background:rgba(40,12,40,.3);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);display:grid;place-items:center;color:#fff;transition:background .2s,color .2s,transform .2s}
+.round-btn:active{transform:scale(1.12)}
+.round-btn.on{background:#fff;color:#000}
+.swipe-hint{position:absolute;left:0;right:0;bottom:24px;text-align:center;font-size:14px;font-weight:500;opacity:.85;animation:nudge 2.2s ease-in-out infinite;pointer-events:none}
+@keyframes nudge{50%{transform:translateY(-5px);opacity:.55}}
+
+/* Passcode */
+.pass-bg{position:absolute;inset:0;background:rgba(40,14,36,.38);-webkit-backdrop-filter:blur(30px) saturate(1.3);backdrop-filter:blur(30px) saturate(1.3)}
+.pass{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;padding-top:116px}
+.pass-title{font-size:20px;font-weight:500;margin-top:10px}
+.dots{display:flex;gap:22px;margin:22px 0 10px}
+.dot{width:13px;height:13px;border-radius:50%;border:1.5px solid #fff;transition:background .12s}
+.dot.on{background:#fff}
+.dots.shake{animation:shake .45s}
+@keyframes shake{20%{transform:translateX(-14px)}40%{transform:translateX(12px)}60%{transform:translateX(-8px)}80%{transform:translateX(5px)}}
+.pass-hint{min-height:20px;font-size:14px;opacity:.9;text-align:center;padding:0 30px}
+.keypad{display:grid;grid-template-columns:repeat(3,78px);gap:16px 26px;margin-top:30px}
+.key{width:78px;height:78px;border-radius:50%;background:rgba(255,255,255,.17);display:flex;flex-direction:column;align-items:center;justify-content:center;transition:background .3s}
+.key:active,.key.press{background:rgba(255,255,255,.5);transition:none}
+.key b{font-size:36px;font-weight:400;line-height:1}
+.key small{font-size:10px;font-weight:600;letter-spacing:2px;margin-top:2px;min-height:12px}
+.pass-foot{position:absolute;bottom:46px;left:52px;right:52px;display:flex;justify-content:space-between;font-size:17px}
+@media (max-height:720px){.pass{padding-top:76px}.keypad{grid-template-columns:repeat(3,70px);gap:12px 24px;margin-top:20px}.key{width:70px;height:70px}}
+
+/* Home */
+.home{position:absolute;inset:0;padding:62px 20px 0}
+.widget{height:158px;border-radius:24px;padding:16px;display:flex;gap:14px;background:rgba(255,255,255,.22);-webkit-backdrop-filter:blur(24px) saturate(1.4);backdrop-filter:blur(24px) saturate(1.4);text-shadow:0 1px 6px rgba(60,10,40,.2)}
+.w-left{flex:1;min-width:0;display:flex;flex-direction:column}
+.w-label{display:flex;align-items:center;gap:5px;font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.w-label svg{color:var(--pink);flex:none}
+.w-sub{font-size:13px;opacity:.8;margin-top:auto}
+.w-days{font-family:var(--display);font-size:46px;font-weight:700;line-height:1.05;letter-spacing:-1px}
+.w-days small{font-size:20px;margin-left:2px}
+.w-next{font-size:12px;opacity:.85;margin-top:2px}
+.w-photo{width:126px;height:126px;flex:none;border-radius:18px;overflow:hidden}
+.w-photo .ph{width:100%;height:100%;aspect-ratio:auto}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);row-gap:22px;margin-top:26px}
+.icon-cell{display:flex;flex-direction:column;align-items:center;gap:6px;font-size:12px;font-weight:500;text-align:center;text-shadow:0 1px 3px rgba(0,0,0,.3)}
+.ic{width:62px;height:62px;border-radius:15px;overflow:hidden;position:relative;display:grid;place-items:center;flex:none;box-shadow:0 2px 8px rgba(0,0,0,.12);transition:filter .15s}
+.ic svg{width:100%;height:100%;display:block}
+.icon-cell:active .ic,.dock .icon-cell:active .ic{filter:brightness(.75)}
+.cal-ic{display:flex;flex-direction:column;align-items:center;color:#000;line-height:1}
+.cal-ic small{font-size:10px;font-weight:600;color:#ff3b30;margin-bottom:2px}
+.cal-ic b{font-size:30px;font-weight:400}
+.notif .cal-ic small{font-size:7px}.notif .cal-ic b{font-size:18px}
+.home-search{position:absolute;left:50%;translate:-50% 0;bottom:122px;height:30px;padding:0 14px;border-radius:15px;display:flex;align-items:center;gap:5px;font-size:13px;font-weight:600;background:rgba(255,255,255,.25);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px)}
+.dock{position:absolute;left:12px;right:12px;bottom:12px;height:94px;border-radius:34px;background:rgba(255,255,255,.22);-webkit-backdrop-filter:blur(26px) saturate(1.5);backdrop-filter:blur(26px) saturate(1.5);display:flex;justify-content:space-around;align-items:center;padding:0 10px}
+.home.enter .widget,.home.enter .icon-cell,.home.enter .home-search{animation:iconIn .6s cubic-bezier(.2,.9,.3,1) both;animation-delay:calc(var(--i,0) * 28ms)}
+@keyframes iconIn{from{opacity:0;transform:scale(1.25)}}
+
+/* ---------- App container ---------- */
+.app{position:absolute;inset:0;z-index:80;background:#fff;color:#000;border-radius:56px;overflow:hidden;opacity:0;transform:scale(.16);visibility:hidden;transition:transform .5s cubic-bezier(.22,1,.36,1),opacity .3s,border-radius .5s,visibility 0s .5s}
+.app.open{opacity:1;transform:none;visibility:visible;border-radius:0;transition:transform .5s cubic-bezier(.22,1,.36,1),opacity .2s,border-radius .5s}
+.view{position:absolute;inset:0;display:flex;flex-direction:column;background:#fff;animation:push .38s cubic-bezier(.22,1,.36,1)}
+.view.no-anim{animation:none}
+.view.sys{background:var(--sys)}
+@keyframes push{from{transform:translateX(28%);opacity:0}}
+.nav{flex:none;padding:54px 16px 6px}
+.nav-row{height:44px;display:flex;align-items:center;justify-content:space-between;color:var(--blue);font-size:17px}
+.back{display:flex;align-items:center;gap:5px;color:var(--blue);font-size:17px;height:44px;padding-right:10px}
+.large-title{font-size:34px;font-weight:700;letter-spacing:.2px;margin:2px 0 8px}
+.subtitle{font-size:15px;color:var(--label2);margin:-6px 0 10px}
+.scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;padding-bottom:40px}
+.searchbar{height:36px;border-radius:10px;background:rgba(118,118,128,.12);display:flex;align-items:center;gap:6px;padding:0 9px;color:rgba(60,60,67,.6);font-size:17px}
+.section-label{font-size:20px;font-weight:700;margin:14px 20px 8px}
+.muted{color:var(--label2)}
+
+/* Messages */
+.msg-row{display:flex;gap:10px;align-items:center;width:100%;padding:0 0 0 6px}
+.unread{width:10px;height:10px;border-radius:50%;flex:none}
+.unread.on{background:var(--blue)}
+.avatar{width:50px;height:50px;border-radius:50%;flex:none;display:grid;place-items:center;color:#fff;font-weight:600;font-size:20px;background:linear-gradient(180deg,#a8adb9,#848893)}
+.avatar.love{background:linear-gradient(180deg,#ff9fbc,#f25c8a)}
+.avatar.sm{width:44px;height:44px;font-size:17px}
+.msg-mid{flex:1;min-width:0;padding:11px 16px 11px 0;border-bottom:.5px solid var(--sep);display:flex;flex-direction:column;gap:2px}
+li:last-child .msg-mid{border-bottom:0}
+.msg-top{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.msg-top strong{font-size:17px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.msg-top span{font-size:15px;display:flex;align-items:center;gap:6px;flex:none}
+.msg-preview{font-size:15px;color:var(--label2);line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.chat-head{flex:none;padding:48px 8px 8px;display:grid;grid-template-columns:70px 1fr 70px;align-items:center;background:rgba(249,249,249,.94);border-bottom:.5px solid var(--sep)}
+.chat-who{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:12px;font-weight:500}
+.chat-body{flex:1;overflow-y:auto;overscroll-behavior:contain;padding:10px 14px 16px;display:flex;flex-direction:column}
+.divider{align-self:center;font-size:11px;color:#8e8e93;margin:16px 0 4px;font-weight:500}
+.bubble{max-width:75%;padding:8px 13px;border-radius:19px;font-size:16px;line-height:1.35;margin-top:10px;word-break:break-word;white-space:pre-wrap;animation:pop .32s cubic-bezier(.2,.9,.3,1.3)}
+.bubble.cont{margin-top:2px}
+.bubble.me{align-self:flex-end;background:var(--blue);color:#fff;transform-origin:right bottom}
+.bubble.them{align-self:flex-start;background:#e9e9eb;color:#000;transform-origin:left bottom}
+.bubble.still{animation:none}
+@keyframes pop{from{opacity:0;transform:scale(.6)}}
+.typing{display:flex;gap:4px;padding:12px 14px}
+.typing i{width:8px;height:8px;border-radius:50%;background:#9a9a9f;animation:blink 1.2s infinite}
+.typing i:nth-child(2){animation-delay:.2s}.typing i:nth-child(3){animation-delay:.4s}
+@keyframes blink{0%,60%,100%{opacity:.35}30%{opacity:1}}
+.chat-input{flex:none;display:flex;gap:8px;align-items:center;padding:8px 12px 36px;background:#fff;border-top:.5px solid var(--sep)}
+.chat-input input{flex:1;min-width:0;height:36px;border-radius:18px;border:1px solid #d1d1d6;padding:0 14px;font:inherit;font-size:16px;outline:none;color:#000}
+.send{width:32px;height:32px;border-radius:50%;background:var(--blue);display:grid;place-items:center;color:#fff;flex:none;transition:background .2s}
+.send:disabled{background:#c7c7cc}
+
+/* Photos */
+.ph{display:block;aspect-ratio:1;position:relative;overflow:hidden;background:linear-gradient(135deg,var(--c1,#f6b6c8),var(--c2,#b48ad6))}
+.ph img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.ph-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2px}
+.ph-btn{display:block;width:100%}
+.ph-count{text-align:center;font-size:13px;color:var(--label2);margin-top:16px}
+.ph-btn{position:relative}
+.ph-check{position:absolute;right:6px;bottom:6px;width:22px;height:22px;border-radius:50%;background:var(--blue);border:1.5px solid #fff;display:grid;place-items:center;opacity:0;transform:scale(.3);transition:opacity .2s,transform .25s cubic-bezier(.2,.9,.3,1.4);box-shadow:0 1px 4px rgba(0,0,0,.3)}
+.ph-btn.sel .ph-check{opacity:1;transform:none}
+.ph-btn .ph::after{content:"";position:absolute;inset:0;background:rgba(255,255,255,0);transition:background .2s}
+.ph-btn.sel .ph::after{background:rgba(255,255,255,.28)}
+.ph-btn.del{animation:phDel .55s cubic-bezier(.5,0,.75,0) forwards;pointer-events:none}
+@keyframes phDel{30%{transform:scale(1.06)}100%{opacity:0;transform:scale(.2) translateY(40px);filter:blur(4px)}}
+.ph-none{padding:140px 20px 0;text-align:center;font-size:20px;font-weight:600;color:#c7c7cc;animation:fade .5s}
+.alert-bg{position:absolute;inset:0;z-index:10;background:rgba(0,0,0,.35);display:grid;place-items:center;animation:fade .2s}
+.alert-bg.out{opacity:0;transition:opacity .2s}
+.alert{width:270px;border-radius:14px;overflow:hidden;background:rgba(242,242,242,.97);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);text-align:center;color:#000;animation:alertIn .28s cubic-bezier(.2,.9,.3,1.2)}
+@keyframes alertIn{from{opacity:0;transform:scale(1.18)}}
+.alert p{padding:22px 16px 20px;font-size:17px;font-weight:600;line-height:1.35}
+.alert button{display:block;width:100%;height:44px;border-top:.5px solid rgba(60,60,67,.3);color:#ff3b30;font-size:17px;font-weight:600;text-align:center}
+.alert button.press,.alert button:active{background:rgba(0,0,0,.1)}
+.nav-row #phSelect{color:var(--blue)}
+.viewer{position:absolute;inset:0;z-index:5;background:#000;color:#fff;display:flex;flex-direction:column;animation:fade .25s}
+@keyframes fade{from{opacity:0}}
+.viewer-top{flex:none;padding:50px 8px 8px;display:grid;grid-template-columns:70px 1fr 70px;align-items:center;text-align:center}
+.viewer-top .back{color:#fff}
+.viewer-date{font-size:15px;font-weight:600}
+.viewer-count{font-size:12px;opacity:.6;margin-top:2px}
+.viewer-stage{flex:1;position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden;touch-action:pan-y}
+.ph.big{width:100%;aspect-ratio:4/5;max-height:100%;animation:fade .3s}
+.arrow{position:absolute;top:50%;translate:0 -50%;width:40px;height:40px;border-radius:50%;background:rgba(0,0,0,.4);color:#fff;display:grid;place-items:center}
+.arrow.prev{left:10px}.arrow.next{right:10px}
+.arrow:disabled{opacity:0;pointer-events:none}
+.viewer-cap{flex:none;padding:18px 24px 54px;font-size:16px;line-height:1.55;min-height:130px}
+
+/* Notes */
+.notes-ui .nav-row,.notes-ui .back{color:#d39b00}
+.group{margin:0 16px;background:#fff;border-radius:12px;overflow:hidden}
+.note-row{display:block;width:100%;padding:11px 16px;border-bottom:.5px solid var(--sep)}
+li:last-child .note-row{border-bottom:0}
+.note-row strong{display:block;font-size:17px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.note-row span{display:block;font-size:15px;color:var(--label2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
+.note-row em{font-style:normal;color:#3c3c43;margin-right:6px}
+.notes-foot{flex:none;padding:10px 16px 36px;text-align:center;font-size:12px;color:var(--label2);background:rgba(249,249,249,.94);border-top:.5px solid var(--sep)}
+.note-detail{padding:0 22px 60px}
+.note-date{text-align:center;font-size:13px;color:#8e8e93;margin:2px 0 14px}
+.note-title{font-size:28px;font-weight:700;line-height:1.3;margin-bottom:12px}
+.note-body{font-size:17px;line-height:1.7;white-space:pre-wrap;-webkit-user-select:text;user-select:text}
+
+/* Phone */
+.seg{display:flex;background:rgba(118,118,128,.12);border-radius:9px;padding:2px;width:170px}
+.seg button{flex:1;height:28px;border-radius:7px;font-size:13px;font-weight:600;color:#000;text-align:center}
+.seg button[aria-pressed="true"]{background:#fff;box-shadow:0 3px 8px rgba(0,0,0,.12)}
+.call-row{display:flex;align-items:center}
+.call-dir{width:30px;flex:none;display:grid;place-items:center;color:#8e8e93;padding-left:6px}
+.call-main{flex:1;min-width:0;display:flex;align-items:center;gap:8px;padding:9px 14px 9px 4px;border-bottom:.5px solid var(--sep)}
+.call-text{flex:1;min-width:0;display:flex;flex-direction:column}
+.call-name{font-size:17px;font-weight:600}
+.missed .call-name{color:#ff3b30}
+.call-sub{font-size:14px;color:var(--label2)}
+.call-time{font-size:15px;color:var(--label2);flex:none}
+.info{color:var(--blue);display:grid;flex:none}
+.tabbar{flex:none;display:flex;justify-content:space-around;padding:6px 0 30px;border-top:.5px solid var(--sep);background:rgba(249,249,249,.94)}
+.tab{display:flex;flex-direction:column;align-items:center;gap:2px;font-size:10px;font-weight:500;color:#999}
+.tab.on{color:var(--blue)}
+
+/* Search history */
+.search-form .searchbar input{flex:1;min-width:0;border:0;background:transparent;font:inherit;font-size:17px;outline:none;color:#000}
+.search-form .searchbar input::placeholder{color:rgba(60,60,67,.6)}
+.hist-row{display:flex;align-items:center;gap:12px;width:100%;padding-left:14px;color:#000}
+.hist-row>svg{color:#8e8e93;flex:none}
+.hist-main{flex:1;min-width:0;display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 14px 12px 0;border-bottom:.5px solid var(--sep)}
+li:last-child .hist-main{border-bottom:0}
+.hist-q{font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hist-t{font-size:14px;color:var(--label2);flex:none}
+
+/* KakaoTalk */
+.kk-head{flex:none;padding:58px 18px 10px;display:flex;justify-content:space-between;align-items:center}
+.kk-head h1{font-size:22px;font-weight:700}
+.kk-head span{display:flex;gap:16px;color:#191919}
+.kk-av{width:46px;height:46px;border-radius:17px;flex:none;display:grid;place-items:center;color:#fff;font-weight:600;font-size:18px;background:#9bb2c9}
+.kk-av.love{background:linear-gradient(180deg,#ff9fbc,#f25c8a)}
+.kk-av.grp{background:#8fc49a}.kk-av.fam{background:#f2b05c}
+.kk-av.photo{background-size:cover;background-position:center}
+.kk-av.sm{width:38px;height:38px;border-radius:14px;font-size:15px}
+.kk-row{display:flex;gap:12px;align-items:center;width:100%;padding:9px 18px}
+.kk-mid{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
+.kk-mid strong{font-size:15px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.kk-mid strong small{font-weight:400;color:#999;margin-left:4px;font-size:14px}
+.kk-mid span{font-size:13px;color:#888;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.kk-side{display:flex;flex-direction:column;align-items:flex-end;gap:5px;flex:none}
+.kk-side time{font-size:11px;color:#999}
+.kk-badge{min-width:20px;height:20px;padding:0 6px;border-radius:10px;background:#fa5b3e;color:#fff;font-size:12px;font-weight:600;display:grid;place-items:center}
+.kk-tabs{flex:none;display:flex;justify-content:space-around;padding:10px 0 30px;border-top:.5px solid #e5e5e5;color:#bbb}
+.kk-tabs .on{color:#191919}
+.kk-chat{background:#b2c7da}
+.kk-chat .chat-head{background:#b2c7da;border-bottom:0;padding-top:50px}
+.kk-chat .chat-head .back{color:#191919}
+.kk-title{text-align:center;font-size:16px;font-weight:600}
+.kk-title small{color:#556;font-weight:400;margin-left:4px}
+.kk-body{flex:1;overflow-y:auto;overscroll-behavior:contain;padding:6px 12px 16px;display:flex;flex-direction:column}
+.kk-day{align-self:center;font-size:12px;color:#fff;background:rgba(0,0,0,.14);padding:4px 12px;border-radius:12px;margin:12px 0 4px}
+.kk-msg{display:flex;gap:8px;margin-top:8px;align-items:flex-start;animation:pop .32s cubic-bezier(.2,.9,.3,1.3)}
+.kk-msg.cont{margin-top:4px}
+.kk-msg.still{animation:none}
+.kk-msg.me{flex-direction:row-reverse}
+.kk-msg .kk-av{visibility:visible}
+.kk-msg.cont .kk-av{visibility:hidden;height:0}
+.kk-col{display:flex;flex-direction:column;gap:4px;max-width:70%;min-width:0}
+.kk-name{font-size:12px;color:#4a5a6a}
+.kk-msg.cont .kk-name{display:none}
+.kk-line{display:flex;align-items:flex-end;gap:5px}
+.kk-msg.me .kk-line{flex-direction:row-reverse}
+.kk-bub{padding:8px 11px;border-radius:14px;font-size:15px;line-height:1.4;background:#fff;color:#191919;white-space:pre-wrap;word-break:keep-all;overflow-wrap:anywhere}
+.kk-msg.me .kk-bub{background:#fee500}
+.kk-msg:not(.cont).them .kk-bub{border-top-left-radius:4px}
+.kk-msg:not(.cont).me .kk-bub{border-top-right-radius:4px}
+.kk-time{font-size:10px;color:#556;flex:none;white-space:nowrap}
+.kk-photo{display:block;width:180px;aspect-ratio:3/4;border-radius:14px;object-fit:cover;background:#dfe6ee}
+.kk-photo.empty{display:grid;place-items:center;color:#8a9aab}
+.kk-typing{display:flex;gap:4px;padding:12px 14px}
+.kk-typing i{width:7px;height:7px;border-radius:50%;background:#aaa;animation:blink 1.2s infinite}
+.kk-typing i:nth-child(2){animation-delay:.2s}.kk-typing i:nth-child(3){animation-delay:.4s}
+.kk-quick{flex:none;display:flex;justify-content:flex-end;padding:8px 12px 10px;background:#b2c7da}
+.kk-quick button{padding:8px 16px;border-radius:18px;background:#fee500;color:#191919;font-size:14px;font-weight:600;box-shadow:0 1px 3px rgba(0,0,0,.12);animation:pop .3s}
+.kk-quick button:active{filter:brightness(.92)}
+.kk-input{flex:none;display:flex;gap:8px;align-items:center;padding:8px 10px 36px;background:#fff}
+.kk-input input{flex:1;min-width:0;height:36px;border:0;background:#f4f4f4;border-radius:18px;padding:0 14px;font:inherit;font-size:15px;outline:none;color:#000}
+.kk-send{height:34px;padding:0 14px;border-radius:17px;background:#fee500;color:#191919;font-size:14px;font-weight:600;flex:none}
+.kk-send:disabled{background:#f4f4f4;color:#bbb}
+
+/* Incoming call */
+.call{position:absolute;inset:0;z-index:89;display:flex;flex-direction:column;align-items:center;color:#fff;background:radial-gradient(120% 80% at 50% 18%,#4b3946,#120d11 72%);animation:callIn .45s cubic-bezier(.2,.9,.3,1)}
+.call.out{opacity:0;transform:scale(1.04);transition:opacity .3s,transform .3s}
+@keyframes callIn{from{transform:translateY(-100%)}}
+.call-top{margin-top:104px;text-align:center}
+.cs-sub{min-height:22px;font-size:17px;color:rgba(255,255,255,.7);font-variant-numeric:tabular-nums}
+.cs-name{font-size:38px;font-weight:400;letter-spacing:-.3px;margin-top:4px}
+.call-av{width:116px;height:116px;border-radius:50%;margin-top:46px;display:grid;place-items:center;font-size:46px;font-weight:600;background:linear-gradient(180deg,#ff9fbc,#f25c8a);animation:callRing 1.6s ease-out infinite}
+.call.live .call-av{animation:none}
+@keyframes callRing{0%{box-shadow:0 0 0 0 rgba(255,255,255,.35)}100%{box-shadow:0 0 0 34px rgba(255,255,255,0)}}
+.call-btns{margin-top:auto;margin-bottom:96px;width:100%;padding:0 46px;display:flex;justify-content:space-between}
+.call.live .call-btns{justify-content:center}
+.call-btn{display:flex;flex-direction:column;align-items:center;gap:9px;font-size:15px;text-align:center}
+.call-btn span{width:78px;height:78px;border-radius:50%;display:grid;place-items:center}
+.call-btn.no span{background:#ff3b30}
+.call-btn.yes span{background:#34c759;animation:callShake 1.3s ease-in-out infinite}
+.call-btn:active span{filter:brightness(.85)}
+@keyframes callShake{0%,55%,100%{transform:rotate(0)}10%,30%{transform:rotate(-14deg)}20%,40%{transform:rotate(14deg)}}
+
+/* Instagram */
+.ig-head{flex:none;padding:52px 14px 6px;display:flex;justify-content:space-between;align-items:center;border-bottom:.5px solid #eee}
+.ig-logo{font-family:"Grand Hotel",cursive;font-size:32px;line-height:1}
+.ig-head-icons{display:flex;gap:18px;align-items:center}
+.ig-head-icons button{position:relative;display:grid}
+.ig-dot{position:absolute;top:-1px;right:-2px;width:8px;height:8px;border-radius:50%;background:#ff3040;border:1.5px solid #fff}
+.ig-stories{display:flex;gap:14px;overflow-x:auto;padding:10px 14px 12px;border-bottom:.5px solid #eee;scrollbar-width:none}
+.ig-stories::-webkit-scrollbar{display:none}
+.ig-story{display:flex;flex-direction:column;align-items:center;gap:5px;font-size:11px;width:66px;flex:none}
+.ig-story span:last-child{width:100%;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ig-ring{width:64px;height:64px;border-radius:50%;padding:2.5px;background:linear-gradient(45deg,#feda75,#fa7e1e,#d62976,#962fbf,#4f5bd5)}
+.ig-ring.seen{background:#dbdbdb}
+.ig-av{width:100%;height:100%;border-radius:50%;border:2.5px solid #fff;display:grid;place-items:center;color:#fff;font-weight:600;font-size:20px;background:linear-gradient(135deg,var(--c1,#f7b2c4),var(--c2,#c58ad8))}
+.ig-av.sm{width:32px;height:32px;border-width:0;font-size:13px}
+.ig-av.photo{background-size:cover;background-position:center}
+.ig-post{border-bottom:.5px solid #eee;padding-bottom:10px}
+.ig-post-head{display:flex;align-items:center;gap:10px;padding:10px 12px;font-size:14px;font-weight:600}
+.ig-post-head small{display:block;font-weight:400;font-size:12px;color:#555}
+.ig-post-head .more{margin-left:auto;font-weight:700;letter-spacing:1px}
+.ig-img{position:relative;display:block;width:100%}
+.ig-img .ph{aspect-ratio:1}
+.ig-car{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;overscroll-behavior-x:contain}
+.ig-car::-webkit-scrollbar{display:none}
+.ig-img .ig-car .ph{flex:none;width:100%;aspect-ratio:4/5;scroll-snap-align:start}
+.ig-count{position:absolute;top:12px;right:12px;background:rgba(0,0,0,.6);color:#fff;font-size:12px;font-weight:600;padding:3px 8px;border-radius:12px;pointer-events:none}
+.ig-arr{position:absolute;top:50%;translate:0 -50%;width:26px;height:26px;border-radius:50%;background:rgba(255,255,255,.85);color:#000;display:grid;place-items:center;box-shadow:0 1px 4px rgba(0,0,0,.2)}
+.ig-arr.prev{left:8px}.ig-arr.next{right:8px}.ig-arr[hidden]{display:none}
+.ig-actions{position:relative}
+.ig-dots{position:absolute;left:50%;top:50%;translate:-50% -50%;display:flex;gap:4px}
+.ig-dots i{width:6px;height:6px;border-radius:50%;background:#dbdbdb;transition:background .2s}
+.ig-dots i.on{background:#0095f6}
+.igp-cell{position:relative}
+.igp-multi{position:absolute;top:6px;right:6px;color:#fff;filter:drop-shadow(0 1px 2px rgba(0,0,0,.45))}
+.ig-bigheart{position:absolute;left:50%;top:50%;translate:-50% -50%;color:#fff;filter:drop-shadow(0 4px 14px rgba(0,0,0,.3));opacity:0;pointer-events:none}
+.ig-bigheart.go{animation:bigheart .9s ease}
+@keyframes bigheart{15%{opacity:1;transform:scale(1.2)}30%{transform:scale(.95)}45%{transform:scale(1)}80%{opacity:1}100%{opacity:0;transform:scale(1)}}
+.ig-actions{display:flex;gap:14px;padding:10px 12px 6px;align-items:center}
+.ig-actions .save{margin-left:auto}
+.ig-like{display:grid;transition:transform .15s}
+.ig-like.on{color:#ff3040}
+.ig-like:active{transform:scale(1.2)}
+.ig-likes{padding:0 12px;font-size:14px;font-weight:600}
+.ig-cap{padding:3px 12px 0;font-size:14px;line-height:1.4}
+.ig-cap b{font-weight:600;margin-right:5px}
+.ig-cmt{padding:3px 12px 0;font-size:14px;line-height:1.4}
+.ig-cmt b{font-weight:600;margin-right:5px}
+.ig-more{display:block;padding:3px 12px 0;font-size:14px;color:#737373}
+.ig-at{color:#00376b}
+.ig-time{padding:5px 12px 0;font-size:11px;color:#737373}
+.ig-tabs{flex:none;display:flex;justify-content:space-around;align-items:center;padding:10px 0 30px;border-top:.5px solid #eee}
+.ig-tabs button{display:grid;color:#000}
+.ig-me.on .ig-av{box-shadow:0 0 0 1.5px #fff,0 0 0 3px #000}
+.ig-av.lg{width:86px;height:86px;border:0;font-size:32px}
+.igp-head{flex:none;padding:52px 14px 8px;display:flex;align-items:center;justify-content:space-between}
+.igp-handle{font-size:22px;font-weight:700;display:flex;align-items:center;gap:5px}
+.igp-top{display:flex;align-items:center;gap:18px;padding:8px 16px 0}
+.igp-av{display:block;width:86px;height:86px;flex:none}
+.igp-stats{flex:1;display:flex;justify-content:space-around;text-align:center}
+.igp-stats b{display:block;font-size:17px;font-weight:700}
+.igp-stats span{font-size:13px}
+.igp-name{padding:12px 16px 0;font-size:14px;font-weight:600}
+.igp-bio{padding:2px 16px 0;font-size:14px;line-height:1.4;white-space:pre-wrap}
+.igp-btns{display:flex;gap:6px;padding:14px 16px 6px}
+.igp-btns span{flex:1;height:32px;border-radius:8px;background:#efefef;display:grid;place-items:center;font-size:14px;font-weight:600}
+.igp-tabs{display:flex;margin-top:10px}
+.igp-tabs span{flex:1;display:grid;place-items:center;height:44px;color:#a8a8a8;border-bottom:1px solid #efefef}
+.igp-tabs span.on{color:#000;border-bottom:1.5px solid #000}
+.igp-tabs svg{width:24px;height:24px}
+.igp-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2px}
+.igp-cell{display:block;width:100%}
+.igp-cell .ph{aspect-ratio:3/4}
+.igp-stats button{display:block;text-align:center;color:#000}
+.igf-tabs{flex:none;display:flex;border-bottom:1px solid #efefef}
+.igf-tabs span{flex:1;text-align:center;font-size:14px;font-weight:600;padding:10px 0;color:#8e8e8e}
+.igf-tabs span.on{color:#000;border-bottom:1.5px solid #000}
+.igf-row{display:flex;align-items:center;gap:12px;width:100%;padding:8px 14px;color:#000}
+.igf-row .ig-av{width:52px;height:52px;border:0;flex:none}
+.igf-mid{flex:1;min-width:0;display:flex;flex-direction:column;font-size:14px}
+.igf-mid strong{font-weight:600}
+.igf-mid span{color:#737373}
+.igf-btn{flex:none;height:32px;padding:0 16px;border-radius:8px;background:#efefef;display:grid;place-items:center;font-size:14px;font-weight:600}
+.igp-bio-wrap{overflow:hidden;transition:opacity .7s ease,height .5s ease .6s}
+.igp-bio-wrap.gone{opacity:0;height:0!important}
+.igp-hl{display:flex;gap:16px;padding:8px 16px 4px;overflow-x:auto}
+.igp-hl-item{display:flex;flex-direction:column;align-items:center;gap:5px;font-size:12px;width:66px;flex:none}
+.igp-hl-ring{width:64px;height:64px;border-radius:50%;border:1px solid #dbdbdb;padding:3px}
+.igp-hl-cover{display:block;width:100%;height:100%;border-radius:50%;background:#efefef center/cover}
+.igp-btns button{flex:1;height:32px;border-radius:8px;background:#efefef;display:flex;align-items:center;justify-content:center;gap:4px;font-size:14px;font-weight:600;color:#000}
+.igp-btns button.blue,.igf-btn.blue{background:#0095f6;color:#fff}
+.ig-sheet-bg{position:absolute;inset:0;z-index:6;background:rgba(0,0,0,.4);display:flex;align-items:flex-end;animation:fade .2s}
+.ig-sheet-bg.out{opacity:0;transition:opacity .25s}
+.ig-sheet{width:100%;background:#fff;border-radius:14px 14px 0 0;padding:8px 0 40px;animation:sheetUp .3s cubic-bezier(.2,.9,.3,1)}
+.ig-sheet-bg.out .ig-sheet{transform:translateY(40%);transition:transform .25s}
+@keyframes sheetUp{from{transform:translateY(100%)}}
+.ig-grab{display:block;width:40px;height:4px;border-radius:2px;background:#dbdbdb;margin:0 auto 10px}
+.ig-sheet-who{display:flex;flex-direction:column;align-items:center;gap:8px;padding:6px 0 14px;border-bottom:1px solid #efefef;font-size:14px}
+.ig-sheet-who .ig-av{width:56px;height:56px;border:0}
+.ig-sheet-item{display:block;width:100%;padding:16px 20px;font-size:16px;text-align:left;color:#000}
+.ig-sheet-item.red{color:#ed4956;font-weight:600}
+.ig-story{color:#000}
+.ig-storyview{position:absolute;inset:0;z-index:7;background:#000;color:#fff;animation:svIn .28s cubic-bezier(.2,.9,.3,1)}
+.ig-storyview.out{opacity:0;transform:scale(.9);transition:opacity .25s,transform .25s}
+@keyframes svIn{from{opacity:0;transform:scale(.85)}}
+.sv-img{position:absolute;left:0;right:0;top:44px;bottom:72px;width:100%;height:calc(100% - 116px);object-fit:cover;border-radius:10px}
+.sv-top{position:absolute;left:0;right:0;top:50px;padding:0 10px;z-index:2}
+.sv-bar{height:2.5px;border-radius:2px;background:rgba(255,255,255,.35);overflow:hidden}
+.sv-bar i{display:block;height:100%;width:100%;background:#fff;transform-origin:left;animation:svBar 5s linear forwards}
+@keyframes svBar{from{transform:scaleX(0)}}
+.sv-who{display:flex;align-items:center;gap:8px;margin-top:10px;font-size:14px;text-shadow:0 1px 3px rgba(0,0,0,.4)}
+.sv-who .ig-av{width:32px;height:32px;border:0}
+.sv-x{margin-left:auto;display:grid}
+.sv-tap{position:absolute;top:110px;bottom:80px;z-index:1}
+.sv-tap.prev{left:0;width:35%}.sv-tap.next{right:0;width:65%}
+.sv-bottom{position:absolute;left:0;right:0;bottom:0;height:72px;padding:0 12px 18px;display:flex;align-items:center;gap:14px}
+.sv-msg{flex:1;height:42px;border-radius:21px;border:1px solid rgba(255,255,255,.6);display:flex;align-items:center;padding:0 16px;font-size:14px}
+.ig-post-head .more{color:#000;font-size:15px;padding:4px 2px}
+.ig-post{overflow:hidden}
+.ig-post.ig-deleting{opacity:0;height:0!important;padding:0;border:0;transition:opacity .2s,height .4s ease}
+.alert p small{display:block;margin-top:4px;font-size:13px;font-weight:400;color:#555}
+.alert button.plain{color:#000;font-weight:400}
+.ig-cap{white-space:pre-wrap}
+.ig-car>.ph:only-child{aspect-ratio:3/4}
+.ig-dm-row{color:#000;text-align:left}
+.igc-head{flex:none;padding:50px 12px 10px;display:flex;align-items:center;gap:10px;border-bottom:.5px solid #efefef;font-size:16px}
+.igc-head .ig-av{width:32px;height:32px;border:0}
+.igc-body{flex:1;overflow-y:auto;overscroll-behavior:contain;padding:12px;display:flex;flex-direction:column;gap:2px}
+.igc-msg{display:flex;align-items:flex-end;gap:7px;margin-top:8px;animation:pop .3s cubic-bezier(.2,.9,.3,1.3)}
+.igc-msg.cont{margin-top:2px}.igc-msg.still{animation:none}
+.igc-msg.me{justify-content:flex-end}
+.igc-msg .ig-av{width:26px;height:26px;border:0;flex:none}
+.igc-msg.them.cont .ig-av{visibility:hidden}
+.igc-bub{max-width:70%;padding:9px 13px;border-radius:20px;font-size:15px;line-height:1.35;background:#efefef;color:#000;white-space:pre-wrap;word-break:keep-all;overflow-wrap:anywhere}
+.igc-msg.me .igc-bub{background:#3797f0;color:#fff}
+.igc-typing{display:flex;gap:4px;padding:12px 14px}
+.igc-typing i{width:7px;height:7px;border-radius:50%;background:#999;animation:blink 1.2s infinite}
+.igc-typing i:nth-child(2){animation-delay:.2s}.igc-typing i:nth-child(3){animation-delay:.4s}
+.igc-quick{flex:none;display:flex;justify-content:flex-end;gap:8px;padding:0 12px}
+.igc-quick:empty{display:none}
+.igc-quick button{padding:9px 14px;border-radius:18px;border:1px solid #3797f0;color:#3797f0;font-size:14px;font-weight:600;background:#fff;animation:pop .3s}
+.igc-quick button:active{background:#eaf3fe}
+.igc-input{flex:none;display:flex;align-items:center;gap:8px;margin:8px 12px 34px;padding:4px 6px 4px 16px;border:1px solid #dbdbdb;border-radius:22px}
+.igc-input input{flex:1;min-width:0;height:34px;border:0;outline:none;font:inherit;font-size:15px;color:#000;background:transparent}
+.igc-input button{color:#0095f6;font-weight:600;font-size:15px;padding:0 8px}
+.igc-input button:disabled{color:#b2dffc}
+.msg-empty{padding:120px 20px 0;text-align:center;color:#8e8e93;font-size:17px;list-style:none}
+.notif.banner{position:absolute;left:8px;right:8px;top:54px;width:auto;z-index:96;opacity:0;transform:translateY(-130%);transition:transform .45s cubic-bezier(.2,.9,.3,1.1),opacity .3s;animation:none;pointer-events:none;box-shadow:0 8px 30px rgba(0,0,0,.18);background:rgba(250,245,248,.82);text-align:left}
+.notif.banner.show{opacity:1;transform:none;pointer-events:auto}
+.sv-bars{display:flex;gap:3px}.sv-bars .sv-bar{flex:1}.sv-bar.done{background:#fff}
+.igp-hl-item{color:#000}
+.sv-text{position:absolute;left:24px;right:24px;top:42%;z-index:2;text-align:center;font-family:'Noto Sans KR','Apple SD Gothic Neo','Malgun Gothic',sans-serif;font-size:20px;font-weight:700;line-height:1.5;color:#fff;text-shadow:0 1px 6px rgba(0,0,0,.55);pointer-events:none}
+.sv-at{color:#fff;white-space:nowrap}
+.igp-tabs button{flex:1;display:grid;place-items:center;height:44px;color:#a8a8a8;border-bottom:1px solid #efefef}
+.igp-tabs button.on{color:#000;border-bottom:1.5px solid #000}
+.igp-tabs button svg{width:24px;height:24px}
+.igp-reel{position:relative;display:block;width:100%;aspect-ratio:9/16;background:#111;overflow:hidden}
+.igp-reel img{width:100%;height:100%;object-fit:cover;display:block}
+.igp-views{position:absolute;left:6px;bottom:6px;display:flex;align-items:center;gap:3px;color:#fff;font-size:13px;font-weight:600;text-shadow:0 1px 3px rgba(0,0,0,.5)}
+.ig-reelview{position:absolute;inset:0;z-index:7;background:#000;color:#fff;animation:svIn .28s cubic-bezier(.2,.9,.3,1);touch-action:none}
+.ig-reelview.out{opacity:0;transition:opacity .25s}
+.ig-reelview video{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#000}
+.rv-top{position:absolute;left:0;right:0;top:50px;padding:0 14px;display:flex;align-items:center;justify-content:space-between;font-size:18px;z-index:2}
+.rv-x{display:grid;width:30px}
+.rv-mute{position:absolute;right:14px;top:96px;width:34px;height:34px;border-radius:50%;background:rgba(0,0,0,.45);font-size:15px;z-index:2}
+.rv-side{position:absolute;right:12px;bottom:130px;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:12px;font-weight:600;z-index:2}
+.rv-side span{margin-bottom:12px}
+.rv-more{color:#fff;font-size:20px;font-weight:700;letter-spacing:1px;margin-top:6px}
+.ig-reelview .ig-sheet-bg,.ig-reelview .alert-bg{z-index:5}
+.rv-bottom{position:absolute;left:14px;right:70px;bottom:60px;z-index:2;font-size:14px;text-shadow:0 1px 4px rgba(0,0,0,.5)}
+.rv-who{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.rv-who .ig-av{width:32px;height:32px;border:0}
+.rv-nav{position:absolute;left:50%;translate:-50% 0;width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,.2);color:#fff;display:grid;place-items:center;z-index:2}
+.rv-nav.prev{top:100px;rotate:90deg}.rv-nav.next{bottom:20px;rotate:90deg}.rv-nav[hidden]{display:none}
+.igp-empty{display:flex;flex-direction:column;align-items:center;gap:10px;padding:60px 0;color:#000}
+.igp-empty span{display:grid;place-items:center;width:72px;height:72px;border-radius:50%;border:2px solid #000}
+.igp-empty p{font-size:22px;font-weight:800}
+.ig-act-row{display:flex;align-items:center;gap:12px;padding:10px 14px;font-size:14px;line-height:1.35}
+.ig-act-row p{flex:1;min-width:0}
+.ig-act-row b{font-weight:600}
+.ig-act-row time{color:#737373;margin-left:4px}
+.ig-thumb{width:44px;height:44px;flex:none;overflow:hidden}
+.ig-thumb .ph{width:100%;height:100%;aspect-ratio:auto}
+.ig-sec{font-size:16px;font-weight:700;padding:14px 14px 4px}
+.ig-dm-row{display:flex;align-items:center;gap:12px;padding:9px 14px;width:100%}
+.ig-dm-row .ig-av{width:54px;height:54px;border:0}
+.ig-dm-mid{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px;font-size:14px}
+.ig-dm-mid span{color:#737373;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ig-dm-mid.new strong,.ig-dm-mid.new span{color:#000;font-weight:600}
+.ig-blue{width:8px;height:8px;border-radius:50%;background:#0095f6;flex:none}
+
+*{scrollbar-width:none;-ms-overflow-style:none}
+*::-webkit-scrollbar{display:none;width:0;height:0}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+</style>
+</head>
+<body>
+<div class="device" id="device">
+  <span class="side action" aria-hidden="true"></span>
+  <span class="side v1" aria-hidden="true"></span>
+  <span class="side v2" aria-hidden="true"></span>
+  <button class="side power" id="power" aria-label="측면 버튼 (화면 잠금)"></button>
+
+  <div class="phone" id="phone" data-screen="s-name">
+    <div class="island" aria-hidden="true"></div>
+    <div class="statusbar" aria-hidden="true">
+      <span class="sb-time" data-clock></span>
+      <span class="sb-icons">
+        <svg viewBox="0 0 18 12" width="18" height="12" fill="currentColor"><rect x="0" y="8" width="3" height="4" rx="1"/><rect x="5" y="5.5" width="3" height="6.5" rx="1"/><rect x="10" y="3" width="3" height="9" rx="1"/><rect x="15" y="0" width="3" height="12" rx="1"/></svg>
+        <svg viewBox="0 0 16 12" width="16" height="12" fill="currentColor"><path d="M8 2.3c2.4 0 4.6.9 6.3 2.5l1.2-1.2A10.6 10.6 0 0 0 8 .6 10.6 10.6 0 0 0 .5 3.6l1.2 1.2A9 9 0 0 1 8 2.3zm0 3.4c1.5 0 2.9.6 3.9 1.5l1.2-1.2A7.3 7.3 0 0 0 8 4a7.3 7.3 0 0 0-5.1 2l1.2 1.2c1-.9 2.4-1.5 3.9-1.5zM8 9a2 2 0 0 0-1.5.7L8 11.2l1.5-1.5A2 2 0 0 0 8 9z"/></svg>
+        <svg viewBox="0 0 27 13" width="27" height="13"><rect x=".5" y=".5" width="23" height="12" rx="3.5" fill="none" stroke="currentColor" stroke-opacity=".4"/><rect x="2" y="2" width="16" height="9" rx="2" fill="currentColor"/><path d="M25 4.5v4c.8-.3 1.3-1.1 1.3-2s-.5-1.7-1.3-2z" fill="currentColor" fill-opacity=".4"/></svg>
+      </span>
+    </div>
+
+    <!-- 1. 이름 입력 -->
+    <section class="screen active" id="s-name" aria-label="이름 입력">
+      <div class="name-heart" aria-hidden="true"><svg viewBox="0 0 24 24" width="24" height="24"><path fill="currentColor" d="M12 21s-7.5-4.6-10-9.3C.4 8.4 2.3 4 6.3 4c2.3 0 3.9 1.3 5.7 3.4C13.8 5.3 15.4 4 17.7 4c4 0 5.9 4.4 4.3 7.7C19.5 16.4 12 21 12 21z"/></svg></div>
+      <h1>이 아이폰의<br>주인은 누구인가요?</h1>
+      <p>이름을 입력하면, 그 사람의 하루가 담긴<br>아이폰이 켜져요.</p>
+      <form id="nameForm" autocomplete="off">
+                <input id="nameInput" type="text" name="nick_x" maxlength="12" placeholder="여기에 입력하세요" aria-label="아이폰 주인" enterkeyhint="go" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" data-form-type="other">
+        <button class="btn-primary" type="submit">아이폰 켜기</button>
+      </form>
+    </section>
+
+    <!-- 2. 꺼진 화면 -->
+    <section class="screen" id="s-off" aria-label="꺼진 화면" role="button" tabindex="0">
+      <p class="off-hint">화면을 탭해서 깨우기</p>
+    </section>
+
+    <!-- 3. 잠금화면 -->
+    <section class="screen" id="s-lock" aria-label="잠금화면">
+      <div class="wall" aria-hidden="true"></div>
+      <div class="lock-inner" id="lockInner">
+        <div class="lock-top">
+          <svg viewBox="0 0 16 20" width="14" height="18" aria-hidden="true"><rect x="1" y="8" width="14" height="11" rx="2.5" fill="currentColor"/><path d="M4 8V5.5a4 4 0 0 1 8 0V8" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+          <p class="lock-date" data-date></p>
+          <p class="lock-time" data-clock></p>
+          <p class="lock-widget" id="lockWidget"></p>
+        </div>
+        <div class="notifs" id="notifs" aria-live="polite"></div>
+        <div class="lock-bottom">
+          <button class="round-btn" id="flashBtn" aria-label="손전등"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M7 3h10v4l-2 3v11H9V10L7 7z"/><path d="M12 13v3" stroke-linecap="round"/></svg></button>
+          <button class="round-btn" id="camBtn" aria-label="카메라"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M4 8h3l2-2.5h6L17 8h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg></button>
+        </div>
+        <p class="swipe-hint">위로 쓸어올려서 열기</p>
+      </div>
+    </section>
+
+    <!-- 4. 암호 입력 -->
+    <section class="screen" id="s-pass" aria-label="암호 입력">
+      <div class="wall" aria-hidden="true"></div>
+      <div class="pass-bg" aria-hidden="true"></div>
+      <div class="pass">
+        <svg viewBox="0 0 16 20" width="14" height="18" aria-hidden="true"><rect x="1" y="8" width="14" height="11" rx="2.5" fill="currentColor"/><path d="M4 8V5.5a4 4 0 0 1 8 0V8" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+        <p class="pass-title">암호 입력</p>
+        <div class="dots" id="dots" aria-hidden="true"></div>
+        <p class="pass-hint" id="passHint" aria-live="polite"></p>
+        <div class="keypad" id="keypad"></div>
+      </div>
+      <div class="pass-foot">
+        <button id="emergencyBtn">긴급</button>
+        <button id="cancelBtn">취소</button>
+      </div>
+    </section>
+
+    <!-- 5. 홈 화면 -->
+    <section class="screen" id="s-home" aria-label="홈 화면">
+      <div class="wall" aria-hidden="true"></div>
+      <div class="home" id="home">
+        <div class="widget" id="widget" style="--i:0"></div>
+        <div class="grid" id="grid"></div>
+        <button class="home-search" data-app="search" style="--i:6"><svg viewBox="0 0 20 20" width="13" height="13"><circle cx="8.5" cy="8.5" r="6" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="m13 13 4.5 4.5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>검색</button>
+        <nav class="dock" id="dock" aria-label="Dock"></nav>
+      </div>
+    </section>
+
+    <!-- 6. 앱 -->
+    <div class="app" id="app" role="dialog" aria-modal="true" aria-label="앱"></div>
+
+    <div class="toast" id="toast" role="status"></div>
+    <div class="homebar" id="homeBar" role="button" tabindex="0" aria-label="홈으로"></div>
+  </div>
+</div>
+
+<script>
+/* =====================================================================
+   동작 코드 (내용을 바꾸려면 맨 아래 DATA 부분만 수정하세요)
+   ===================================================================== */
+window.addEventListener('DOMContentLoaded', () => {
+  const $ = (s, r = document) => r.querySelector(s);
+  const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+  const device = $('#device'), phone = $('#phone'), app = $('#app');
+  const wait = ms => new Promise(r => setTimeout(r, ms));
+  /* 한글 입력 중 엔터: 조합이 끝난 뒤 한 번만 전송 (아이폰 키보드 포함) */
+  function imeEnter(input) {
+    let pend = false;
+    input.addEventListener('keydown', e => {
+      if (e.key !== 'Enter') return;
+      if (e.isComposing) { e.preventDefault(); pend = true; }
+    });
+    input.addEventListener('compositionend', () => {
+      if (!pend) return;
+      pend = false;
+      setTimeout(() => input.form?.requestSubmit(), 0);
+    });
+  }
+  let owner = '';
+  let pending = null;
+  let currentApp = null;
+  let hintedHome = false;
+
+  /* ---------- 텍스트 치환 ---------- */
+  const hasBatchim = w => { const c = w.charCodeAt(w.length - 1); return c >= 0xac00 && c <= 0xd7a3 && (c - 0xac00) % 28 !== 0; };
+  /* 한글 이름 → 영문(국어의 로마자 표기법) */
+  const RR_I = ['g','kk','n','d','tt','r','m','b','pp','s','ss','','j','jj','ch','k','t','p','h'];
+  const RR_V = ['a','ae','ya','yae','eo','e','yeo','ye','o','wa','wae','oe','yo','u','wo','we','wi','yu','eu','ui','i'];
+  const RR_F = ['','k','k','k','n','n','n','t','l','k','m','l','l','l','p','l','m','p','p','t','t','ng','t','t','k','t','p','t'];
+  const romanize = str => [...String(str)].map(ch => {
+    const c = ch.charCodeAt(0) - 0xac00;
+    if (c < 0 || c > 11171) return /[a-z0-9]/i.test(ch) ? ch.toLowerCase() : '';
+    return RR_I[Math.floor(c / 588)] + RR_V[Math.floor((c % 588) / 28)] + RR_F[c % 28];
+  }).join('');
+  const myHandle = () => (romanize(owner || DATA.defaultOwner) || 'me') + '_';
+  const fill = s => {
+    const n = owner || DATA.defaultOwner;
+    return String(s ?? '')
+      .replaceAll('monchichi_yam', myHandle())
+      .replaceAll('{name아}', n + (hasBatchim(n) ? '아' : '야'))
+      .replaceAll('{name이}', n + (hasBatchim(n) ? '이' : ''))
+      .replaceAll('{name}', n)
+      .replaceAll('{boyfriend}', DATA.boyfriend);
+  };
+  const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const t = s => esc(fill(s));
+
+  /* ---------- 아이콘 ---------- */
+  const ICON = {
+    chev: '<svg viewBox="0 0 12 20" width="12" height="20" aria-hidden="true"><path d="M10 2 2 10l8 8" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+    chevR: '<svg viewBox="0 0 12 20" width="12" height="20" aria-hidden="true"><path d="m2 2 8 8-8 8" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+    chevSm: '<svg viewBox="0 0 12 20" width="7" height="12" aria-hidden="true"><path d="m2 2 8 8-8 8" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+    search: '<svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true"><circle cx="8.5" cy="8.5" r="6" fill="none" stroke="currentColor" stroke-width="2"/><path d="m13 13 4.5 4.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
+    compose: '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-6"/><path d="M17.5 3.5a2.1 2.1 0 0 1 3 3L12 15l-4 1 1-4z"/></svg>',
+    up: '<svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true"><path d="M10 16V4M4.5 9.5 10 4l5.5 5.5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+    heart: '<svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path fill="currentColor" d="M12 21s-7.5-4.6-10-9.3C.4 8.4 2.3 4 6.3 4c2.3 0 3.9 1.3 5.7 3.4C13.8 5.3 15.4 4 17.7 4c4 0 5.9 4.4 4.3 7.7C19.5 16.4 12 21 12 21z"/></svg>',
+    info: '<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M12 10.5v6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="7.4" r="1.2" fill="currentColor"/></svg>',
+    outgoing: '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7M9 7h8v8"/></svg>',
+    clock: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2" stroke-linecap="round"/></svg>',
+    star: '<svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor" aria-hidden="true"><path d="m12 3 2.8 5.8 6.2.9-4.5 4.4 1 6.2L12 17.4l-5.5 2.9 1-6.2L3 9.7l6.2-.9z"/></svg>',
+    clockFill: '<svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="currentColor"/><path d="M12 6.5V12l3.5 2.2" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>',
+    person: '<svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor" aria-hidden="true"><circle cx="12" cy="8" r="4.5"/><path d="M3.5 21c.8-4.4 4.3-7 8.5-7s7.7 2.6 8.5 7z"/></svg>',
+    keypad: '<svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor" aria-hidden="true"><circle cx="6" cy="4" r="2"/><circle cx="12" cy="4" r="2"/><circle cx="18" cy="4" r="2"/><circle cx="6" cy="10" r="2"/><circle cx="12" cy="10" r="2"/><circle cx="18" cy="10" r="2"/><circle cx="6" cy="16" r="2"/><circle cx="12" cy="16" r="2"/><circle cx="18" cy="16" r="2"/><circle cx="12" cy="22" r="2"/></svg>',
+    voicemail: '<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><circle cx="6.5" cy="12" r="4"/><circle cx="17.5" cy="12" r="4"/><path d="M6.5 16h11"/></svg>',
+  };
+  const PETALS = ['#f5a623', '#f8d32c', '#9fd44a', '#3fc1a5', '#3fa4f0', '#8a6cf0', '#e75fbf', '#f2545b'];
+  const PALETTE = [['#f7b2c4', '#c58ad8'], ['#ffd1a8', '#f48fb1'], ['#b8c6ff', '#f2a7d0'], ['#ffc4d6', '#ffe1a8'], ['#a8d8ff', '#c9a7ff'], ['#ffb3a7', '#d48fd8']];
+
+  const APPS = {
+    messages: { label: '메시지', bg: 'linear-gradient(180deg,#6ef08a,#0dbf3e)', svg: '<svg viewBox="0 0 64 64"><path fill="#fff" d="M32 13C19.8 13 10 21.3 10 31.5c0 5.9 3.3 11.1 8.4 14.5-.4 3-1.9 5.8-4.4 7.8 4.6.3 8.9-1.3 12-4.1 1.9.4 3.9.7 6 .7 12.2 0 22-8.3 22-18.5S44.2 13 32 13z"/></svg>', render: o => o?.chat != null ? renderChat(o.chat, false) : renderMsgList(false) },
+    instagram: { label: 'Instagram', bg: 'linear-gradient(135deg,#833ab4,#fd1d1d,#fcb045)', svg: '<svg viewBox="0 0 64 64"><rect x="10" y="10" width="44" height="44" rx="13" fill="none" stroke="#fff" stroke-width="5"/><circle cx="32" cy="32" r="10" fill="none" stroke="#fff" stroke-width="5"/><circle cx="45" cy="19" r="3" fill="#fff"/></svg>', render: o => renderInsta(o) },
+    kakao: { label: '카카오톡', bg: '#fee500', svg: '<svg viewBox="0 0 64 64"><path fill="#3c1e1e" d="M32 13C19 13 8.5 21.4 8.5 31.7c0 6.7 4.4 12.5 11.1 15.8-.5 1.8-1.8 6.6-2 7.6-.3 1.3.5 1.2 1 .9.4-.3 6.4-4.3 9-6.1 1.4.2 2.9.3 4.4.3 13 0 23.5-8.4 23.5-18.6S45 13 32 13z"/><text x="32" y="36.5" text-anchor="middle" font-size="10.5" font-weight="900" fill="#fee500" font-family="Arial,Helvetica,sans-serif" letter-spacing=".3">TALK</text></svg>', render: o => o?.chat != null ? renderKChat(o.chat, false) : renderKList(false) },
+    photos: { label: '사진', bg: '#fff', svg: `<svg viewBox="0 0 64 64"><g transform="translate(32 32)">${PETALS.map((c, i) => `<ellipse cx="0" cy="-11" rx="6.5" ry="11" fill="${c}" opacity=".85" style="mix-blend-mode:multiply" transform="rotate(${i * 45})"/>`).join('')}</g></svg>`, render: () => renderPhotos() },
+    notes: { label: '메모', bg: 'linear-gradient(180deg,#ffdc4f 0 26%,#fff 26%)', svg: '<svg viewBox="0 0 64 64"><g stroke="#d4d4d8" stroke-width="1.6"><line x1="10" y1="32" x2="54" y2="32"/><line x1="10" y1="42" x2="54" y2="42"/><line x1="10" y1="52" x2="54" y2="52"/></g></svg>', render: () => renderNotes(false) },
+    phone: { label: '전화', bg: 'linear-gradient(180deg,#6ef08a,#0dbf3e)', svg: '<svg viewBox="-6 -6 36 36"><path fill="#fff" d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>', render: () => renderPhone('all') },
+    search: { label: '검색기록', bg: '#fff', svg: '<svg viewBox="0 0 64 64"><defs><linearGradient id="sfg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2fd0ff"/><stop offset="1" stop-color="#1060f0"/></linearGradient></defs><circle cx="32" cy="32" r="25" fill="url(#sfg)"/><circle cx="32" cy="32" r="21" fill="none" stroke="#fff" stroke-opacity=".7" stroke-width="3" stroke-dasharray=".7 2.6"/><g transform="rotate(45 32 32)"><path d="M32 12 36 32H28z" fill="#ff3b30"/><path d="M32 52 36 32H28z" fill="#fff"/></g></svg>', render: () => renderSearch() },
+    calendar: { label: '캘린더', bg: '#fff', svg: () => { const d = new Date(); return `<span class="cal-ic"><small>${d.toLocaleDateString('ko-KR', { weekday: 'long' })}</small><b>${d.getDate()}</b></span>`; } },
+    camera: { label: '카메라', bg: 'linear-gradient(180deg,#ececef,#a9a9b0)', svg: '<svg viewBox="0 0 64 64"><rect x="10" y="21" width="44" height="29" rx="6" fill="#3a3a3c"/><rect x="24" y="16" width="16" height="8" rx="2" fill="#3a3a3c"/><circle cx="32" cy="35.5" r="10" fill="#8e8e93"/><circle cx="32" cy="35.5" r="6.5" fill="#1c1c1e"/><circle cx="46" cy="27" r="2" fill="#ffd60a"/></svg>' },
+    weather: { label: '날씨', bg: 'linear-gradient(180deg,#4aa3ff,#1b6fe0)', svg: '<svg viewBox="0 0 64 64"><circle cx="26" cy="26" r="10" fill="#ffd60a"/><path fill="#fff" d="M22 46h24a8 8 0 0 0 0-16 11 11 0 0 0-21 3 6.5 6.5 0 0 0-3 13z"/></svg>' },
+    settings: { label: '설정', bg: 'linear-gradient(180deg,#d8d8dc,#8e8e93)', svg: '<svg viewBox="0 0 64 64"><circle cx="32" cy="32" r="17" fill="none" stroke="#3a3a3c" stroke-width="7" stroke-dasharray="4.5 4.4"/><circle cx="32" cy="32" r="13" fill="#6e6e73"/><circle cx="32" cy="32" r="6" fill="#d1d1d6"/></svg>' },
+  };
+  const icon = key => { const a = APPS[key]; return `<span class="ic" style="background:${a.bg}" aria-hidden="true">${typeof a.svg === 'function' ? a.svg() : a.svg}</span>`; };
+
+  /* ---------- 공통 ---------- */
+  function fit() {
+    const mobile = matchMedia('(max-width:500px)').matches;
+    const s = mobile ? 1 : Math.min(1, (innerHeight - 40) / 844, (innerWidth - 40) / 420);
+    device.style.setProperty('--s', s);
+  }
+  fit();
+  addEventListener('resize', fit);
+  const phoneScale = () => { const r = phone.getBoundingClientRect(); return r.width / phone.offsetWidth || 1; };
+
+  function tick() {
+    const d = new Date();
+    const time = '11:15';
+    $$('[data-clock]').forEach(el => { el.textContent = time; });
+    $$('[data-date]').forEach(el => { el.textContent = d.toLocaleDateString('ko-KR', { month: 'long', day: 'numeric', weekday: 'long' }); });
+  }
+  tick();
+  setInterval(tick, 1000);
+
+  function dday() {
+    const s = new Date(DATA.startDate + 'T00:00:00');
+    const n = new Date();
+    const today = new Date(n.getFullYear(), n.getMonth(), n.getDate());
+    const days = DATA.dayCount || Math.floor((today - s) / 864e5) + 1;
+    const next = Math.ceil((days + 1) / 100) * 100;
+    return { days, next, left: next - days };
+  }
+
+  let toastTimer;
+  function toast(msg) {
+    const el = $('#toast');
+    el.textContent = msg;
+    el.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => el.classList.remove('show'), 2200);
+  }
+  const buzz = p => { try { navigator.vibrate?.(p); } catch (_) {} };
+
+  function show(id) {
+    if (document.activeElement && document.activeElement !== document.body) document.activeElement.blur();
+    $$('.screen').forEach(s => s.classList.toggle('active', s.id === id));
+    phone.dataset.screen = id;
+  }
+  const setTone = dark => phone.classList.toggle('dark-ui', dark);
+
+  /* ---------- 1. 이름 ---------- */
+  $('#nameForm').addEventListener('submit', e => {
+    e.preventDefault();
+    owner = $('#nameInput').value.trim().slice(0, 12) || DATA.defaultOwner;
+    document.title = `${owner}의 iPhone`;
+    $('#nameInput').blur();
+    $('#nameInput').disabled = true;
+    renderLockWidget();
+    renderHome();
+    show('s-off');
+  });
+
+  /* ---------- 2. 꺼진 화면 ---------- */
+  function wake() {
+    show('s-lock');
+    startNotifs();
+  }
+  $('#s-off').addEventListener('click', wake);
+
+  /* ---------- 3. 잠금화면 ---------- */
+  function renderLockWidget() {
+    $('#lockWidget').innerHTML = '';
+    $('#lockWidget').style.display = 'none';
+  }
+
+  let notifTimers = [];
+  function startNotifs() {
+    notifTimers.forEach(clearTimeout);
+    notifTimers = [];
+    const box = $('#notifs');
+    box.innerHTML = '';
+    DATA.notifications.forEach((n, i) => {
+      notifTimers.push(setTimeout(() => {
+        if (phone.dataset.screen !== 's-lock') return;
+        const b = document.createElement('button');
+        b.className = 'notif';
+        b.innerHTML = `${icon(n.app)}<span class="notif-body"><span class="notif-head"><strong>${t(n.title)}</strong><time>${t(n.time)}</time></span><span class="notif-text">${t(n.body)}</span></span>`;
+        b.addEventListener('click', () => {
+          if (drag.moved) return;
+          pending = n;
+          unlock();
+        });
+        box.appendChild(b);
+        buzz(10);
+      }, 900 + i * DATA.notificationInterval));
+    });
+  }
+
+  const lock = $('#s-lock'), lockInner = $('#lockInner');
+  const drag = { y0: null, dy: 0, moved: false };
+  lock.addEventListener('pointerdown', e => {
+    if (e.target.closest('.round-btn')) return;
+    drag.y0 = e.clientY; drag.dy = 0; drag.moved = false;
+    lockInner.style.transition = 'none';
+  });
+  addEventListener('pointermove', e => {
+    if (drag.y0 == null) return;
+    const raw = e.clientY - drag.y0;
+    if (Math.abs(raw) > 8) drag.moved = true;
+    drag.dy = Math.min(0, raw / phoneScale());
+    lockInner.style.transform = `translateY(${drag.dy}px)`;
+    lockInner.style.opacity = String(Math.max(0, 1 + drag.dy / 420));
+  });
+  addEventListener('pointerup', () => {
+    if (drag.y0 == null) return;
+    drag.y0 = null;
+    lockInner.style.transition = '';
+    if (drag.dy < -90) unlock();
+    else { lockInner.style.transform = ''; lockInner.style.opacity = ''; }
+    setTimeout(() => { drag.moved = false; }, 0);
+  });
+  lock.addEventListener('wheel', e => { if (e.deltaY > 40) unlock(); }, { passive: true });
+
+  function unlock() {
+    if (phone.dataset.screen !== 's-lock') return;
+    lockInner.style.transform = 'translateY(-160px)';
+    lockInner.style.opacity = '0';
+    resetPass();
+    show('s-pass');
+    setTimeout(() => { lockInner.style.transform = ''; lockInner.style.opacity = ''; }, 500);
+  }
+
+  $('#flashBtn').addEventListener('click', e => {
+    const on = e.currentTarget.classList.toggle('on');
+    toast(on ? '손전등 켬' : '손전등 끔');
+  });
+  $('#camBtn').addEventListener('click', () => toast('카메라는 잠금 해제 후 사용할 수 있어요'));
+
+  /* ---------- 4. 암호 ---------- */
+  let code = '', fails = 0;
+  const KEYS = [['1', ''], ['2', 'ABC'], ['3', 'DEF'], ['4', 'GHI'], ['5', 'JKL'], ['6', 'MNO'], ['7', 'PQRS'], ['8', 'TUV'], ['9', 'WXYZ'], null, ['0', ''], null];
+  $('#keypad').innerHTML = KEYS.map(k => k ? `<button class="key" data-k="${k[0]}" aria-label="${k[0]}"><b>${k[0]}</b><small>${k[1]}</small></button>` : '<span></span>').join('');
+  $('#keypad').addEventListener('click', e => { const k = e.target.closest('[data-k]'); if (k) press(k.dataset.k); });
+
+  function drawDots() {
+    $('#dots').innerHTML = Array.from({ length: DATA.passcode.length }, (_, i) => `<span class="dot ${i < code.length ? 'on' : ''}"></span>`).join('');
+    $('#cancelBtn').textContent = code ? '삭제' : '취소';
+  }
+  function resetPass() { code = ''; drawDots(); }
+  function press(d) {
+    if (code.length >= DATA.passcode.length) return;
+    code += d;
+    buzz(6);
+    const key = $(`.key[data-k="${d}"]`);
+    key?.classList.add('press');
+    setTimeout(() => key?.classList.remove('press'), 120);
+    drawDots();
+    if (code.length === DATA.passcode.length) setTimeout(checkCode, 150);
+  }
+  function checkCode() {
+    if (code === DATA.passcode) {
+      fails = 0;
+      $('#passHint').textContent = '';
+      goHome();
+      return;
+    }
+    fails++;
+    const dots = $('#dots');
+    dots.classList.remove('shake');
+    void dots.offsetWidth;
+    dots.classList.add('shake');
+    buzz([30, 40, 30]);
+    setTimeout(resetPass, 420);
+    if (fails >= 2) $('#passHint').textContent = `힌트: ${fill(DATA.passcodeHint)}`;
+  }
+  $('#cancelBtn').addEventListener('click', () => {
+    if (code) { code = code.slice(0, -1); drawDots(); }
+    else { pending = null; show('s-lock'); }
+  });
+  $('#emergencyBtn').addEventListener('click', () => toast('긴급 구조 요청은 데모에서 지원하지 않아요'));
+
+  /* ---------- 5. 홈 ---------- */
+  function renderHome() {
+    const d = dday();
+    $('#widget').innerHTML = `
+      <div class="w-left">
+        <p class="w-label">${ICON.heart}${t(DATA.boyfriend)} & ${esc(owner)}</p>
+        <p class="w-sub">함께한 지</p>
+        <p class="w-days">${d.days}<small>일</small></p>
+        <p class="w-next">${d.next}일까지 ${d.left}일 남음</p>
+      </div>
+      <div class="w-photo">${phEl(DATA.otherPhotos[0], 0)}</div>`;
+    const cell = (key, i, label = true) => `<button class="icon-cell" data-app="${key}" style="--i:${i}" aria-label="${APPS[key].label}">${icon(key)}${label ? `<span>${APPS[key].label}</span>` : ''}</button>`;
+    $('#grid').innerHTML = ['kakao', 'instagram', 'notes', 'calendar', 'camera', 'weather', 'settings'].map((k, i) => cell(k, i + 1)).join('');
+    $('#dock').innerHTML = ['phone', 'search', 'messages', 'photos'].map((k, i) => cell(k, i + 9, false)).join('');
+  }
+  $('#s-home').addEventListener('click', e => {
+    const b = e.target.closest('[data-app]');
+    if (b) openApp(b.dataset.app, b);
+  });
+
+  /* 예약 문자 */
+  let schedStarted = false;
+  function startScheduled() {
+    const S = DATA.scheduledMessage;
+    if (schedStarted || !S) return;
+    schedStarted = true;
+    setTimeout(async () => {
+      let c = DATA.messages.find(m => m._sched);
+      if (!c) { c = { name: S.name, love: S.love, unread: true, time: '지금', chat: [{ divider: S.divider }], _sched: true }; DATA.messages.unshift(c); }
+      for (let k = 0; k < S.texts.length; k++) {
+        if (k) await wait(S.gap);
+        const text = S.texts[k];
+        c.chat.push({ from: 'them', text });
+        c.unread = true; c.time = '지금';
+        if (k === 0 && S.dayCountAfter) { DATA.dayCount = S.dayCountAfter; renderHome(); }
+        const idx = DATA.messages.indexOf(c);
+        const n = { app: 'messages', title: S.name, body: text, time: '지금', chat: idx };
+        DATA.notifications.push(n);
+        arrive(n, idx);
+      }
+    }, S.delay);
+  }
+  let bannerTimer;
+  function arrive(n, idx) {
+    buzz([20, 60, 20]);
+    const scr = phone.dataset.screen;
+    if (scr === 's-lock') {
+      const b = document.createElement('button');
+      b.className = 'notif';
+      b.innerHTML = `${icon(n.app)}<span class="notif-body"><span class="notif-head"><strong>${t(n.title)}</strong><time>${t(n.time)}</time></span><span class="notif-text">${t(n.body)}</span></span>`;
+      b.addEventListener('click', () => { if (drag.moved) return; pending = n; unlock(); });
+      $('#notifs').appendChild(b);
+      return;
+    }
+    if (scr !== 's-home') return;
+    // 메시지 앱이 열려 있으면 화면도 갱신
+    const chatOpen = currentApp === 'messages' && $('#chatBody') && app.dataset.chat == idx;
+    if (chatOpen) {
+      const m = DATA.messages[idx].chat.at(-1);
+      addMsg($('#chatBody'), m, true);
+      DATA.messages[idx].unread = false;
+      return;
+    }
+    if (currentApp === 'messages' && $('.msg-row, .msg-empty')) renderMsgList(false);
+    let bn = $('#banner');
+    if (!bn) { bn = document.createElement('button'); bn.id = 'banner'; bn.className = 'notif banner'; phone.appendChild(bn); }
+    bn.innerHTML = `${icon(n.app)}<span class="notif-body"><span class="notif-head"><strong>${t(n.title)}</strong><time>${t(n.time)}</time></span><span class="notif-text">${t(n.body)}</span></span>`;
+    bn.onclick = () => { bn.classList.remove('show'); openApp('messages', $('#s-home [data-app="messages"]'), { chat: idx }); };
+    $('#toast').classList.remove('show');
+    bn.classList.remove('show'); void bn.offsetWidth; bn.classList.add('show');
+    clearTimeout(bannerTimer);
+    bannerTimer = setTimeout(() => bn.classList.remove('show'), 4500);
+  }
+
+  function goHome() {
+    startScheduled();
+    show('s-home');
+    const home = $('#home');
+    home.classList.remove('enter');
+    void home.offsetWidth;
+    home.classList.add('enter');
+    if (pending) {
+      const p = pending;
+      pending = null;
+      setTimeout(() => openApp(p.app, $(`#s-home [data-app="${p.app}"]`), p), 650);
+    }
+  }
+
+  /* ---------- 6. 앱 ---------- */
+  function openApp(key, from, opt) {
+    const a = APPS[key];
+    if (!a.render) { toast(`${a.label} 앱은 지금 열 수 없어요`); return; }
+    const el = from?.querySelector?.('.ic') || from;
+    if (el) {
+      const pr = phone.getBoundingClientRect(), r = el.getBoundingClientRect(), s = phoneScale();
+      app.style.transformOrigin = `${(r.left + r.width / 2 - pr.left) / s}px ${(r.top + r.height / 2 - pr.top) / s}px`;
+    } else app.style.transformOrigin = '50% 85%';
+    currentApp = key;
+    if (key === 'messages') $('#banner')?.classList.remove('show');
+    app.setAttribute('aria-label', a.label);
+    a.render(opt);
+    app.classList.add('open');
+    setTone(true);
+    if (!hintedHome) { hintedHome = true; setTimeout(() => toast('아래 막대를 탭하면 홈으로 돌아가요'), 900); }
+  }
+  function closeApp() {
+    if (!currentApp) return;
+    app.classList.remove('open');
+    currentApp = null;
+    setTone(false);
+    setTimeout(() => { if (!currentApp) app.innerHTML = ''; }, 500);
+  }
+  function mount(html, { cls = '', anim = false } = {}) {
+    if (document.activeElement && document.activeElement !== document.body) document.activeElement.blur();
+    app.innerHTML = `<div class="view ${cls} ${anim ? '' : 'no-anim'}">${html}</div>`;
+    return app.firstElementChild;
+  }
+  const backBtn = label => `<button class="back" data-back>${ICON.chev}${label ? `<span>${label}</span>` : ''}</button>`;
+
+  /* 메시지 */
+  const avatar = (c, size = '') => `<span class="avatar ${c.love ? 'love' : ''} ${size}" aria-hidden="true">${esc(fill(c.initial || c.name).charAt(0))}</span>`;
+
+  function renderMsgList(anim) {
+    delete app.dataset.chat;
+    const v = mount(`
+      <header class="nav">
+        <div class="nav-row"><span>편집</span>${ICON.compose}</div>
+        <h1 class="large-title">메시지</h1>
+        <div class="searchbar">${ICON.search}<span>검색</span></div>
+      </header>
+      <ul class="scroll">${DATA.messages.map((c, i) => {
+        const last = [...c.chat].reverse().find(m => m.text);
+        return `<li><button class="msg-row" data-i="${i}">
+          <span class="unread ${c.unread ? 'on' : ''}"></span>${avatar(c)}
+          <span class="msg-mid">
+            <span class="msg-top"><strong>${t(c.name)}</strong><span class="muted">${t(c.time)} ${ICON.chevSm}</span></span>
+            <span class="msg-preview">${t(last?.text)}</span>
+          </span></button></li>`;
+      }).join('') || '<li class="msg-empty">메시지 없음</li>'}</ul>`, { anim });
+    $$('.msg-row', v).forEach(b => b.addEventListener('click', () => renderChat(+b.dataset.i, true)));
+  }
+
+  function addMsg(body, m, animate) {
+    let el;
+    if (m.divider) {
+      el = document.createElement('p');
+      el.className = 'divider';
+      el.textContent = fill(m.divider);
+    } else {
+      el = document.createElement('div');
+      const prev = body.lastElementChild;
+      el.className = `bubble ${m.from}${animate ? '' : ' still'}`;
+      if (prev?.classList.contains('bubble') && prev.classList.contains(m.from)) el.classList.add('cont');
+      el.textContent = fill(m.text);
+    }
+    body.appendChild(el);
+    body.scrollTop = body.scrollHeight;
+  }
+
+  async function theyType(c, body, texts) {
+    for (const text of texts) {
+      await wait(700);
+      let typing = null;
+      if (body.isConnected) {
+        typing = document.createElement('div');
+        const prev = body.lastElementChild;
+        typing.className = 'bubble them typing';
+        if (prev?.classList.contains('them')) typing.classList.add('cont');
+        typing.innerHTML = '<i></i><i></i><i></i>';
+        body.appendChild(typing);
+        body.scrollTop = body.scrollHeight;
+      }
+      await wait(900 + Math.min(fill(text).length * 45, 1800));
+      typing?.remove();
+      const m = { from: 'them', text };
+      c.chat.push(m);
+      if (body.isConnected) { addMsg(body, m, true); buzz(8); }
+    }
+  }
+
+  function renderChat(i, anim) {
+    const c = DATA.messages[i];
+    app.dataset.chat = i;
+    c.unread = false;
+    const v = mount(`
+      <header class="chat-head">${backBtn('')}<div class="chat-who">${avatar(c, 'sm')}<span>${t(c.name)}</span></div><span></span></header>
+      <div class="chat-body" id="chatBody" aria-live="polite"></div>
+      <form class="chat-input" id="chatForm" autocomplete="off">
+        <input id="chatText" autocomplete="off" autocorrect="off" spellcheck="false" data-form-type="other" placeholder="iMessage" aria-label="메시지 입력" enterkeyhint="send" readonly tabindex="-1">
+        <button class="send" type="submit" aria-label="보내기" disabled>${ICON.up}</button>
+      </form>`, { anim });
+    const body = $('#chatBody', v), input = $('#chatText', v), send = $('.send', v);
+    c.chat.forEach(m => addMsg(body, m, false));
+    $('[data-back]', v).addEventListener('click', () => renderMsgList(false));
+    input.addEventListener('input', () => { send.disabled = !input.value.trim(); });
+    imeEnter(input);
+    $('#chatForm', v).addEventListener('submit', e => e.preventDefault(), true);
+    $('#chatForm', v).addEventListener('submit-disabled', e => {
+      e.preventDefault();
+      const text = input.value.trim();
+      if (!text) return;
+      input.value = '';
+      send.disabled = true;
+      const m = { from: 'me', text };
+      c.chat.push(m);
+      addMsg(body, m, true);
+      if (c.autoReplies?.length) {
+        c._reply = ((c._reply ?? -1) + 1) % c.autoReplies.length;
+        theyType(c, body, [c.autoReplies[c._reply]]);
+      }
+    });
+    if (c.incoming?.length && !c._played) {
+      c._played = true;
+      theyType(c, body, c.incoming);
+    }
+  }
+
+  /* 사진 */
+  function phEl(p, i, cls = '') {
+    const [c1, c2] = p.colors || PALETTE[i % PALETTE.length];
+    return `<span class="ph ${cls}" style="--c1:${c1};--c2:${c2}">${p.src ? `<img src="${esc(p.src)}" alt="${t(p.caption)}" loading="lazy" onerror="this.remove()">` : ''}</span>`;
+  }
+  function renderPhotos() {
+    const v = mount(`
+      <header class="nav">
+        <div class="nav-row"><span></span><button id="phSelect">선택</button></div>
+        <h1 class="large-title">${t(DATA.photoAlbum.title)}</h1>
+        <p class="subtitle">${t(DATA.photoAlbum.subtitle)}</p>
+      </header>
+      <div class="scroll">
+        ${DATA.photos.length ? `<div class="ph-grid">${DATA.photos.map((p, i) => `<button class="ph-btn" data-i="${i}" aria-label="${t(p.caption)}">${phEl(p, i)}<span class="ph-check" aria-hidden="true"><svg viewBox="0 0 24 24" width="13" height="13"><path d="m5 12.5 4.5 4.5L19 7.5" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span></button>`).join('')}</div>` : '<p class="ph-none">사진 없음</p>'}
+        <p class="ph-count">사진 ${DATA.photos.length}장</p>
+      </div>`);
+    let busy = false;
+    $$('.ph-btn', v).forEach(b => b.addEventListener('click', () => { if (!busy) openViewer(v, +b.dataset.i); }));
+    $('#phSelect', v).addEventListener('click', async () => {
+      if (busy || !DATA.photos.length) return;
+      busy = true;
+      const sel = $('#phSelect', v);
+      sel.textContent = '취소';
+      const btns = $$('.ph-btn', v);
+      $('.ph-grid', v).classList.add('selecting');
+      btns.forEach((b, i) => setTimeout(() => { b.classList.add('sel'); buzz(5); }, i * 70));
+      $('.ph-count', v).textContent = `${btns.length}장의 사진이 선택됨`;
+      await wait(3000);
+      if (!v.isConnected) return;
+      const bg = document.createElement('div');
+      bg.className = 'alert-bg';
+      bg.innerHTML = '<div class="alert" role="alertdialog" aria-label="추억을 삭제하시겠습니까?"><p>추억을 삭제하시겠습니까?</p><button type="button">예</button></div>';
+      v.appendChild(bg);
+      buzz(20);
+      const yes = $('button', bg);
+      let go;
+      const confirmed = new Promise(r => { go = r; });
+      yes.addEventListener('click', () => go());
+      setTimeout(() => go(), 3000);
+      await confirmed;
+      if (!v.isConnected) return;
+      yes.classList.add('press');
+      await wait(180);
+      bg.classList.add('out');
+      await wait(220);
+      bg.remove();
+      btns.forEach((b, i) => setTimeout(() => b.classList.add('del'), i * 110));
+      await wait(btns.length * 110 + 550);
+      if (!v.isConnected) return;
+      DATA.photos = [];
+      $('.ph-grid', v).outerHTML = '<p class="ph-none">사진 없음</p>';
+      $('.ph-count', v).textContent = '사진 0장';
+      sel.textContent = '선택';
+      buzz([20, 40, 20]);
+      busy = false;
+    });
+  }
+  function openViewer(root, start) {
+    let i = start, x0 = null;
+    const vw = document.createElement('div');
+    vw.className = 'viewer';
+    const draw = () => {
+      const p = DATA.photos[i];
+      vw.innerHTML = `
+        <div class="viewer-top">${backBtn('')}<div><p class="viewer-date">${t(p.date)}</p><p class="viewer-count">${i + 1} / ${DATA.photos.length}</p></div><span></span></div>
+        <div class="viewer-stage">${phEl(p, i, 'big')}
+          <button class="arrow prev" aria-label="이전 사진" ${i === 0 ? 'disabled' : ''}>${ICON.chev}</button>
+          <button class="arrow next" aria-label="다음 사진" ${i === DATA.photos.length - 1 ? 'disabled' : ''}>${ICON.chevR}</button>
+        </div>
+        <p class="viewer-cap">${t(p.caption)}</p>`;
+    };
+    const go = d => { const n = i + d; if (n >= 0 && n < DATA.photos.length) { i = n; draw(); } };
+    vw.close = () => { vw.remove(); setTone(true); };
+    vw.go = go;
+    vw.addEventListener('click', e => {
+      if (e.target.closest('[data-back]')) vw.close();
+      else if (e.target.closest('.prev')) go(-1);
+      else if (e.target.closest('.next')) go(1);
+    });
+    vw.addEventListener('pointerdown', e => { if (e.target.closest('.viewer-stage')) x0 = e.clientX; });
+    vw.addEventListener('pointerup', e => {
+      if (x0 == null) return;
+      const dx = e.clientX - x0;
+      x0 = null;
+      if (dx > 50) go(-1); else if (dx < -50) go(1);
+    });
+    draw();
+    root.appendChild(vw);
+    setTone(false);
+  }
+
+  /* 메모 */
+  function renderNotes(anim) {
+    const row = n => `<li><button class="note-row" data-i="${DATA.notes.indexOf(n)}"><strong>${t(n.title)}</strong><span><em>${t(n.date)}</em>${t(fill(n.body).split('\n').find(l => l.trim()) || '')}</span></button></li>`;
+    const pinned = DATA.notes.filter(n => n.pinned), rest = DATA.notes.filter(n => !n.pinned);
+    const v = mount(`
+      <header class="nav"><div class="nav-row"><span class="back">${ICON.chev}<span>폴더</span></span><span>편집</span></div><h1 class="large-title">메모</h1><div class="searchbar">${ICON.search}<span>검색</span></div></header>
+      <div class="scroll">
+        ${pinned.length ? `<h2 class="section-label">고정됨</h2><ul class="group">${pinned.map(row).join('')}</ul>` : ''}
+        ${rest.length ? `<h2 class="section-label">이전 30일</h2><ul class="group">${rest.map(row).join('')}</ul>` : ''}
+      </div>
+      <p class="notes-foot">${DATA.notes.length}개의 메모</p>`, { cls: 'sys notes-ui', anim });
+    $$('.note-row', v).forEach(b => b.addEventListener('click', () => renderNote(+b.dataset.i)));
+  }
+  function renderNote(i) {
+    const n = DATA.notes[i];
+    const v = mount(`
+      <header class="nav"><div class="nav-row">${backBtn('메모')}<span>완료</span></div></header>
+      <div class="scroll note-detail">
+        <p class="note-date">${t(n.date)}</p>
+        <h2 class="note-title">${t(n.title)}</h2>
+        <div class="note-body">${t(n.body)}</div>
+      </div>`, { cls: 'notes-ui', anim: true });
+    $('[data-back]', v).addEventListener('click', () => renderNotes(false));
+  }
+
+  /* 전화 */
+  function renderPhone(filter) {
+    const list = DATA.calls.filter(c => filter === 'all' || c.type === 'missed');
+    const TYPE = { incoming: '수신', outgoing: '발신', missed: '부재중' };
+    const tabs = [['즐겨찾기', ICON.star], ['최근 통화', ICON.clockFill, true], ['연락처', ICON.person], ['키패드', ICON.keypad], ['음성 사서함', ICON.voicemail]];
+    const v = mount(`
+      <header class="nav">
+        <div class="nav-row"><span>편집</span>
+          <div class="seg" role="group" aria-label="통화 필터"><button data-f="all" aria-pressed="${filter === 'all'}">전체</button><button data-f="missed" aria-pressed="${filter === 'missed'}">부재중</button></div>
+          <span style="width:34px"></span></div>
+        <h1 class="large-title">최근 통화</h1>
+      </header>
+      <ul class="scroll">${list.map(c => `
+        <li class="call-row ${c.type === 'missed' ? 'missed' : ''}">
+          <span class="call-dir">${c.type === 'outgoing' ? ICON.outgoing : ''}</span>
+          <span class="call-main">
+            <span class="call-text">
+              <span class="call-name">${t(c.name)}${c.count > 1 ? ` (${c.count})` : ''}</span>
+              <span class="call-sub">${t(c.label || '휴대전화')} · ${TYPE[c.type]}${c.duration ? ` · ${t(c.duration)}` : ''}</span>
+            </span>
+            <span class="call-time">${t(c.time)}</span><span class="info">${ICON.info}</span>
+          </span>
+        </li>`).join('')}</ul>
+      <nav class="tabbar">${tabs.map(([l, ic, on]) => `<span class="tab ${on ? 'on' : ''}">${ic}${l}</span>`).join('')}</nav>`);
+    $$('.seg button', v).forEach(b => b.addEventListener('click', () => renderPhone(b.dataset.f)));
+  }
+
+  /* 검색기록 */
+  function renderSearch() {
+    const v = mount(`
+      <header class="nav">
+        <div class="nav-row"><span></span><span>편집</span></div>
+        <h1 class="large-title">검색 기록</h1>
+        <form class="search-form" id="searchForm" role="search"><label class="searchbar">${ICON.search}<input type="search" id="searchInput" autocomplete="off" autocorrect="off" spellcheck="false" data-form-type="other" placeholder="검색 또는 웹사이트 입력" aria-label="검색" enterkeyhint="search"></label></form>
+      </header>
+      <div class="scroll">
+        <h2 class="section-label">최근 검색</h2>
+        <ul class="group">${DATA.searches.map((s, i) => `<li><button class="hist-row" data-i="${i}">${ICON.clock}<span class="hist-main"><span class="hist-q">${t(s.q)}</span><span class="hist-t">${t(s.time)}</span></span></button></li>`).join('')}</ul>
+      </div>`, { cls: 'sys' });
+    const input = $('#searchInput', v);
+    $$('.hist-row', v).forEach(b => b.addEventListener('click', () => { input.value = fill(DATA.searches[+b.dataset.i].q); }));
+    imeEnter(input);
+    $('#searchForm', v).addEventListener('submit', e => {
+      e.preventDefault();
+      const q = input.value.trim();
+      if (!q) return;
+      DATA.searches = [{ q, time: '방금' }, ...DATA.searches.filter(s => fill(s.q) !== q)];
+      renderSearch();
+    });
+  }
+
+  /* 카카오톡 */
+  const kav = (c, size = '') => c.avatar ? `<span class="kk-av photo ${size}" style="background-image:url('${esc(c.avatar)}')" aria-hidden="true"></span>` : `<span class="kk-av ${c.love ? 'love' : c.group ? 'grp' : c.family ? 'fam' : ''} ${size}" aria-hidden="true">${esc(fill(c.initial || c.name).charAt(0))}</span>`;
+  const KTABS = [
+    '<svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><circle cx="12" cy="8" r="4.5"/><path d="M3.5 21c.8-4.4 4.3-7 8.5-7s7.7 2.6 8.5 7z"/></svg>',
+    '<svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M12 3C6.5 3 2 6.6 2 11c0 2.9 1.9 5.4 4.8 6.8-.2.8-.8 2.9-.9 3.3-.1.6.2.5.4.4.2-.1 2.8-1.9 3.9-2.6.6.1 1.2.1 1.8.1 5.5 0 10-3.6 10-8S17.5 3 12 3z"/></svg>',
+    '<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="4"/><path d="M8 10h8M8 14h5"/></svg>',
+    '<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 9h16v11H4zM2.5 6h19v3h-19zM12 6v14"/></svg>',
+    '<svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>',
+  ];
+  function renderKList(anim) {
+    const v = mount(`
+      <header class="kk-head"><h1>채팅</h1><span>${ICON.search}${ICON.compose}</span></header>
+      <ul class="scroll">${DATA.kakao.map((c, i) => {
+        const last = [...c.chat].reverse().find(m => m.text);
+        return `<li><button class="kk-row" data-i="${i}">${kav(c)}
+          <span class="kk-mid"><strong>${t(c.name)}${c.members ? `<small>${esc(c.members)}</small>` : ''}</strong><span>${t(last?.text)}</span></span>
+          <span class="kk-side"><time>${t(c.time)}</time>${c.unread ? `<span class="kk-badge">${c.unread > 300 ? '300+' : c.unread}</span>` : ''}</span>
+        </button></li>`;
+      }).join('')}</ul>
+      <nav class="kk-tabs">${KTABS.map((s, i) => `<span class="${i === 1 ? 'on' : ''}">${s}</span>`).join('')}</nav>`, { anim });
+    $$('.kk-row', v).forEach(b => b.addEventListener('click', () => renderKChat(+b.dataset.i, true)));
+  }
+  function addK(body, c, m, animate) {
+    let el;
+    if (m.divider) {
+      el = document.createElement('p');
+      el.className = 'kk-day';
+      el.textContent = fill(m.divider);
+    } else {
+      const who = m.from === 'me' ? '' : (m.who || c.name);
+      const prev = body.lastElementChild;
+      const cont = prev?.classList.contains('kk-msg') && prev.dataset.who === (m.from === 'me' ? '@me' : who);
+      el = document.createElement('div');
+      el.className = `kk-msg ${m.from}${cont ? ' cont' : ''}${animate ? '' : ' still'}`;
+      el.dataset.who = m.from === 'me' ? '@me' : who;
+      const time = m.time ? `<span class="kk-time">${t(m.time)}</span>` : '';
+      const body_ = m.photo != null ? (m.photo ? `<img class="kk-photo" src="${esc(m.photo)}" alt="사진">` : `<span class="kk-photo empty" aria-label="사진"><svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="5" width="18" height="14" rx="2.5"/><circle cx="9" cy="10" r="1.8"/><path d="m4 17 5-4.5 3.5 3 3-2.5L20 17"/></svg></span>`) : `<div class="kk-bub">${t(m.text)}</div>`;
+      el.innerHTML = m.from === 'me'
+        ? `<div class="kk-col"><div class="kk-line">${body_}${time}</div></div>`
+        : `${kav({ name: who, love: !m.who && c.love, avatar: !m.who ? c.avatar : '' }, 'sm')}<div class="kk-col"><span class="kk-name">${t(who)}</span><div class="kk-line">${body_}${time}</div></div>`;
+    }
+    body.appendChild(el);
+    body.scrollTop = body.scrollHeight;
+  }
+  const nowTime = () => '오전 11:15';
+  async function kType(c, body, texts) {
+    for (const text of texts) {
+      await wait(800);
+      let typing = null;
+      if (body.isConnected) {
+        typing = document.createElement('div');
+        typing.className = 'kk-msg them cont';
+        typing.dataset.who = '@typing';
+        typing.innerHTML = `${kav(c, 'sm')}<div class="kk-col"><div class="kk-bub kk-typing"><i></i><i></i><i></i></div></div>`;
+        body.appendChild(typing);
+        body.scrollTop = body.scrollHeight;
+      }
+      await wait(900 + Math.min(fill(text).length * 45, 1800));
+      typing?.remove();
+      const m = { from: 'them', text, time: nowTime() };
+      c.chat.push(m);
+      if (body.isConnected) { addK(body, c, m, true); buzz(8); }
+    }
+  }
+  function renderKChat(i, anim) {
+    const c = DATA.kakao[i];
+    c.unread = 0;
+    const v = mount(`
+      <header class="chat-head">${backBtn('')}<p class="kk-title">${t(c.name)}${c.members ? `<small>${esc(c.members)}</small>` : ''}</p><span></span></header>
+      <div class="kk-body" id="kkBody" aria-live="polite"></div>
+      ${c.quick && !c._quickUsed ? `<div class="kk-quick"><button type="button" id="kkQuick">${t(c.quick)}</button></div>` : ''}
+      <form class="kk-input" id="kkForm" autocomplete="off">
+        <input id="kkText" autocomplete="off" autocorrect="off" spellcheck="false" data-form-type="other" placeholder="메시지 입력" aria-label="메시지 입력" enterkeyhint="send" ${c.canType ? '' : 'readonly tabindex="-1"'}>
+        <button class="kk-send" type="submit" disabled>전송</button>
+      </form>`, { cls: 'kk-chat', anim });
+    const body = $('#kkBody', v), input = $('#kkText', v), send = $('.kk-send', v);
+    c.chat.forEach(m => addK(body, c, m, false));
+    $('[data-back]', v).addEventListener('click', () => renderKList(false));
+    input.addEventListener('input', () => { send.disabled = !input.value.trim(); });
+    imeEnter(input);
+    $('#kkQuick', v)?.addEventListener('click', e => { c._quickUsed = true; e.currentTarget.parentElement.remove(); sendK(fill(c.quick)); });
+    $('#kkForm', v).addEventListener('submit', e => { if (!c.canType) { e.preventDefault(); e.stopImmediatePropagation(); } }, true);
+    $('#kkForm', v).addEventListener('submit', e => {
+      e.preventDefault();
+      const text = input.value.trim();
+      if (!text) return;
+      input.value = '';
+      send.disabled = true;
+      sendK(text);
+    });
+    function sendK(text) {
+      const m = { from: 'me', text, time: nowTime() };
+      c.chat.push(m);
+      addK(body, c, m, true);
+      if (fill(c.name) === '심재윤' && text.replace(/\s/g, '').includes('보고싶어')) {
+        setTimeout(() => { if (phone.dataset.screen === 's-home' && currentApp === 'kakao') showCall('심재윤'); }, 4000);
+        return;
+      }
+      if (c.canType) return;
+      if (c.autoReplies?.length) {
+        c._reply = ((c._reply ?? -1) + 1) % c.autoReplies.length;
+        if (c.group) {
+          const r = c.autoReplies[c._reply];
+          (async () => { await wait(1200); const mm = { from: 'them', who: r.who, text: r.text, time: nowTime() }; c.chat.push(mm); if (body.isConnected) { addK(body, c, mm, true); buzz(8); } })();
+        } else kType(c, body, [c.autoReplies[c._reply]]);
+      }
+    }
+    if (c.incoming?.length && !c._played) {
+      c._played = true;
+      kType(c, body, c.incoming);
+    }
+  }
+
+  /* 인스타그램 */
+  const IG = {
+    heart: '<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M12 20.5s-7.7-4.6-9.6-9.3C1 7.6 3.3 4 6.9 4c2.2 0 3.7 1.2 5.1 3 1.4-1.8 2.9-3 5.1-3 3.6 0 5.9 3.6 4.5 7.2-1.9 4.7-9.6 9.3-9.6 9.3z"/></svg>',
+    heartFill: '<svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M12 20.5s-7.7-4.6-9.6-9.3C1 7.6 3.3 4 6.9 4c2.2 0 3.7 1.2 5.1 3 1.4-1.8 2.9-3 5.1-3 3.6 0 5.9 3.6 4.5 7.2-1.9 4.7-9.6 9.3-9.6 9.3z"/></svg>',
+    comment: '<svg viewBox="0 0 24 24" width="25" height="25" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"><path d="M20.5 12a8.5 8.5 0 1 1-3.4-6.8A8.4 8.4 0 0 1 20.5 12zM20.5 12l.9 8.5-5-2.1"/></svg>',
+    send: '<svg viewBox="0 0 24 24" width="25" height="25" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"><path d="M21.5 3 10 13.5M21.5 3 15 21l-5-7.5L2.5 9z"/></svg>',
+    save: '<svg viewBox="0 0 24 24" width="25" height="25" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"><path d="M5 3h14v18l-7-6-7 6z"/></svg>',
+    home: '<svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M3 10.5 12 3l9 7.5V21h-6v-6H9v6H3z"/></svg>',
+    search: '<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2"><circle cx="10.5" cy="10.5" r="7"/><path d="m16 16 5 5" stroke-linecap="round"/></svg>',
+    plus: '<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="5"/><path d="M12 8v8M8 12h8" stroke-linecap="round"/></svg>',
+    reels: '<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="5"/><path d="M3 8.5h18M8.5 3l3 5.5M14 3l3 5.5"/><path d="m10 12 5 3-5 3z" fill="currentColor"/></svg>',
+  };
+  const igav = (name, i, size = '') => { const [c1, c2] = PALETTE[i % PALETTE.length]; return `<span class="ig-av ${size}" style="--c1:${c1};--c2:${c2}" aria-hidden="true">${esc(fill(name).replace(/[^\p{L}\p{N}]/gu, '').charAt(0).toUpperCase())}</span>`; };
+  const igMine = size => { const p = DATA.instagram.avatar ? { src: DATA.instagram.avatar } : DATA.otherPhotos[DATA.instagram.profilePhoto]; return p?.src ? `<span class="ig-av photo ${size}" style="background-image:url('${esc(p.src)}')" aria-hidden="true"></span>` : igav(DATA.instagram.handle, 0, size); };
+
+  const igLikes = p => p.likedBy ? `${fill(p.likedBy)}님 외 ${p.likes.toLocaleString()}명이 좋아합니다` : `좋아요 ${p.likes.toLocaleString()}개`;
+  function renderInsta(opt) {
+    const I = DATA.instagram;
+    const v = mount(`
+      <header class="ig-head"><span class="ig-logo">Instagram</span>
+        <span class="ig-head-icons"><button id="igAct" aria-label="알림">${IG.heart}<span class="ig-dot"></span></button><button id="igDm" aria-label="메시지">${IG.send}<span class="ig-dot"></span></button></span>
+      </header>
+      <div class="scroll">
+        <div class="ig-stories">
+          <span class="ig-story"><span class="ig-ring seen">${igMine('')}</span><span>내 스토리</span></span>
+          ${I.storyList.filter(h => !I.accounts?.[h]?.unfollowed).map((s, i) => `<button class="ig-story" ${I.accounts?.[s]?.story ? `data-story="${esc(s)}"` : ''}><span class="ig-ring ${I.accounts?.[s]?.storySeen ? 'seen' : ''}">${igAcctAv(s, i + 1, '')}</span><span>${t(s)}</span></button>`).join('')}
+        </div>
+        ${igFeed().map((it, i) => igPostHTML(it.h, it.p, i, false)).join('')}
+      </div>
+      ${igTabs('home')}`);
+    const feed = igFeed();
+    wireIgPosts(v, el => feed[+el.dataset.i]?.p);
+    $('#igAct', v).addEventListener('click', () => renderInstaActivity());
+    $('#igDm', v).addEventListener('click', () => renderInstaDm());
+    wireIgTabs(v);
+    $$('[data-story]', v).forEach(b => b.addEventListener('click', () => openStory(v, b.dataset.story)));
+    I.storyList.forEach(h => { const src = I.accounts?.[h]?.story; if (src && !igPreloaded[src]) { igPreloaded[src] = new Image(); igPreloaded[src].src = src; } });
+    if (opt?.open === 'dm') renderInstaDm();
+    else if (opt?.open === 'activity') renderInstaActivity();
+  }
+  /* 홈 피드: 아래 계정들의 게시물을 무작위 순서로 */
+  let igFeedOrder = null;
+  function igFeed() {
+    const I = DATA.instagram;
+    if (!igFeedOrder) {
+      igFeedOrder = [];
+      (I.feedAccounts || []).forEach(h => (I.accounts[h]?.posts || []).forEach(p => igFeedOrder.push({ h, p })));
+      for (let i = igFeedOrder.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [igFeedOrder[i], igFeedOrder[j]] = [igFeedOrder[j], igFeedOrder[i]]; }
+    }
+    return igFeedOrder.filter(it => !I.accounts[it.h]?.unfollowed && (I.accounts[it.h]?.posts || []).includes(it.p));
+  }
+  function igPostHTML(h, p, i, mine) {
+    const chevS = d => ICON[d].replace('width="12" height="20"', 'width="7" height="12"');
+    const srcs = p.srcs || [p.src || (DATA.otherPhotos[p.photo] || {}).src].filter(Boolean);
+    const at = x => t(x).replace(/@([\w.]+)/g, '<span class="ig-at">@$1</span>');
+    return `<article class="ig-post" data-i="${i}">
+      <div class="ig-post-head">${mine ? igMine('sm') : igAcctAv(h, 0, 'sm')}<span>${t(h)}${p.location ? `<small>${t(p.location)}</small>` : ''}</span><button class="more" aria-label="게시물 옵션">···</button></div>
+      <div class="ig-img">${srcs.length > 1 ? `<div class="ig-car">${srcs.map((src, k) => phEl({ src }, k)).join('')}</div><span class="ig-count">1/${srcs.length}</span><button class="ig-arr prev" aria-label="이전" hidden>${chevS('chev')}</button><button class="ig-arr next" aria-label="다음">${chevS('chevR')}</button>` : (p.srcs ? `<div class="ig-car">${phEl({ src: srcs[0] }, 0)}</div>` : phEl({ src: srcs[0] }, i))}<span class="ig-bigheart">${IG.heartFill.replace(/26/g, '96')}</span></div>
+      <div class="ig-actions">${srcs.length > 1 ? `<span class="ig-dots">${srcs.map((_, k) => `<i class="${k ? '' : 'on'}"></i>`).join('')}</span>` : ''}<button class="ig-like ${p.liked ? 'on' : ''}" aria-label="좋아요">${p.liked ? IG.heartFill : IG.heart}</button>${IG.comment}${IG.send}<span class="save">${IG.save}</span></div>
+      ${p.likes != null ? `<p class="ig-likes" data-likes>${igLikes(p)}</p>` : ''}
+      <p class="ig-cap"><b>${t(h)}</b>${at(p.caption)}</p>
+      ${p.comments?.length > 2 ? `<button class="ig-more">댓글 ${p.comments.length}개 모두 보기</button>` : ''}
+      ${(p.comments || []).map((c, ci, arr) => `<p class="ig-cmt"${ci < arr.length - 2 ? ' hidden' : ''}><b>${t(c.who)}</b>${at(c.text)}</p>`).join('')}
+      ${p.time ? `<p class="ig-time">${t(p.time)}</p>` : ''}
+    </article>`;
+  }
+  function wireIgPosts(v, getPost, mine) {
+    $$('.ig-post', v).forEach(post => {
+      const like = $('.ig-like', post);
+      const setLike = on => { const p = getPost(post); if (!p || !!p.liked === on) return; p.liked = on; if (p.likes != null) { p.likes += on ? 1 : -1; $('[data-likes]', post).textContent = igLikes(p); } like.classList.toggle('on', on); like.innerHTML = on ? IG.heartFill : IG.heart; };
+      like.addEventListener('click', () => setLike(!getPost(post)?.liked));
+      let last = 0;
+      $('.ig-img', post).addEventListener('click', () => { const now = Date.now(); if (now - last < 320) { setLike(true); const hh = $('.ig-bigheart', post); hh.classList.remove('go'); void hh.offsetWidth; hh.classList.add('go'); buzz(10); } last = now; });
+      $('.ig-more', post)?.addEventListener('click', e => { $$('.ig-cmt[hidden]', post).forEach(c => c.hidden = false); e.currentTarget.remove(); });
+      const car = $('.ig-car', post), cnt = $('.ig-count', post);
+      if (car && cnt) {
+        const n = car.children.length, dots = $$('.ig-dots i', post), prev = $('.ig-arr.prev', post), next = $('.ig-arr.next', post);
+        car.addEventListener('scroll', () => { const k = Math.round(car.scrollLeft / car.clientWidth); cnt.textContent = `${k + 1}/${n}`; dots.forEach((d, j) => d.classList.toggle('on', j === k)); prev.hidden = k === 0; next.hidden = k === n - 1; }, { passive: true });
+        const go = d => car.scrollTo({ left: (Math.round(car.scrollLeft / car.clientWidth) + d) * car.clientWidth, behavior: 'smooth' });
+        prev.addEventListener('click', e => { e.stopPropagation(); go(-1); });
+        next.addEventListener('click', e => { e.stopPropagation(); go(1); });
+      }
+      if (mine) $('.more', post).addEventListener('click', () => askDeletePost(v, post));
+    });
+  }
+  /* 내 게시물 보기 (프로필에서 눌렀을 때) */
+  function renderMyPosts(start) {
+    const I = DATA.instagram;
+    const v = mount(`
+      <header class="nav"><div class="nav-row" style="color:#000">${backBtn('').replace('class="back"', 'class="back" style="color:#000"')}<span style="text-align:center"><small style="display:block;font-size:12px;color:#737373;font-weight:600">${t(I.handle)}</small><strong style="font-size:16px">게시물</strong></span><span style="width:34px"></span></div></header>
+      <div class="scroll">${I.posts.map((p, i) => igPostHTML(I.handle, p, i, true)).join('')}</div>`, { anim: true });
+    $('[data-back]', v).addEventListener('click', () => renderInstaProfile());
+    wireIgPosts(v, el => I.posts[+el.dataset.i], true);
+    const sc = $('.scroll', v), el = $(`.ig-post[data-i="${start}"]`, v);
+    if (sc && el) sc.scrollTop = el.offsetTop - sc.offsetTop;
+  }
+  const igPreloaded = {};
+  /* 내 게시물 삭제 */
+  function askDeletePost(v, post) {
+    const sheet = document.createElement('div');
+    sheet.className = 'ig-sheet-bg';
+    sheet.innerHTML = '<div class="ig-sheet" role="dialog" aria-label="게시물 옵션"><span class="ig-grab"></span><button class="ig-sheet-item red" data-del>삭제</button><button class="ig-sheet-item" data-cancel>취소</button></div>';
+    v.appendChild(sheet);
+    const closeSheet = () => { sheet.classList.add('out'); setTimeout(() => sheet.remove(), 250); };
+    sheet.addEventListener('click', e => {
+      if (e.target.closest('[data-del]')) { closeSheet(); setTimeout(() => confirmDelete(v, post), 200); }
+      else if (e.target.closest('[data-cancel]') || !e.target.closest('.ig-sheet')) closeSheet();
+    });
+  }
+  function confirmDelete(v, post) {
+    const bg = document.createElement('div');
+    bg.className = 'alert-bg';
+    bg.innerHTML = '<div class="alert" role="alertdialog"><p>게시물을 삭제하시겠어요?<small>삭제한 게시물은 복구할 수 없어요.</small></p><button type="button" data-yes>삭제</button><button type="button" class="plain" data-no>취소</button></div>';
+    v.appendChild(bg);
+    bg.addEventListener('click', e => {
+      if (e.target.closest('[data-yes]')) {
+        bg.remove();
+        const i = +post.dataset.i;
+        DATA.instagram.posts.splice(i, 1);
+        post.style.height = post.offsetHeight + 'px';
+        void post.offsetHeight;
+        post.classList.add('ig-deleting');
+        setTimeout(() => { post.remove(); $$('.ig-post', v).forEach((el, k) => { el.dataset.i = k; }); }, 450);
+        toast('게시물이 삭제되었어요');
+      } else if (e.target.closest('[data-no]')) bg.remove();
+    });
+  }
+  /* 하이라이트 보기 */
+  function openHighlight(v, h, hl) {
+    const items = (hl.items?.length ? hl.items : [hl.cover]).map(x => typeof x === 'string' ? { src: x } : x);
+    items.forEach(({ src }) => { if (!igPreloaded[src]) { igPreloaded[src] = new Image(); igPreloaded[src].src = src; } });
+    let idx = 0;
+    const el = document.createElement('div');
+    el.className = 'ig-storyview';
+    v.appendChild(el);
+    setTone(false);
+    const close = () => { el.classList.add('out'); setTimeout(() => el.remove(), 250); setTone(true); };
+    const go = d => { const n = idx + d; if (n < 0) { show(); return; } if (n >= items.length) { close(); return; } idx = n; show(); };
+    const show = () => {
+      el.innerHTML = `
+        <img class="sv-img" src="${esc(items[idx].src)}" alt="${esc(hl.title)} 하이라이트">${items[idx].text ? `<p class="sv-text">${t(items[idx].text).replace(/@([\w.]+)/g, '<span class="sv-at">@$1</span>')}</p>` : ''}
+        <div class="sv-top"><div class="sv-bars">${items.map((_, k) => `<span class="sv-bar ${k < idx ? 'done' : ''}">${k === idx ? '<i></i>' : ''}</span>`).join('')}</div>
+          <div class="sv-who">${igAcctAv(h, 0, 'sm')}<strong>${t(hl.title)}</strong><button class="sv-x" aria-label="닫기"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div></div>
+        <button class="sv-tap prev" aria-label="이전"></button><button class="sv-tap next" aria-label="다음"></button>
+        <div class="sv-bottom"><span class="sv-msg">메시지 보내기</span>${IG.heart.replace('fill="none"', 'fill="none" style="color:#fff"')}${IG.send.replace('fill="none"', 'fill="none" style="color:#fff"')}</div>`;
+      const img = $('.sv-img', el), bar = $('.sv-bar i', el);
+      bar.style.animationPlayState = 'paused';
+      const start = () => { bar.style.animationPlayState = 'running'; };
+      if (img.complete) start(); else { img.addEventListener('load', start); img.addEventListener('error', start); }
+      bar.addEventListener('animationend', () => go(1));
+      $('.sv-x', el).addEventListener('click', close);
+      $('.sv-tap.prev', el).addEventListener('click', () => go(-1));
+      $('.sv-tap.next', el).addEventListener('click', () => go(1));
+    };
+    show();
+  }
+  /* 스토리 보기 */
+  function openStory(v, start) {
+    const I = DATA.instagram;
+    const list = I.storyList.filter(h => I.accounts?.[h]?.story && !I.accounts[h].unfollowed);
+    let idx = list.indexOf(start);
+    if (idx < 0) return;
+    const el = document.createElement('div');
+    el.className = 'ig-storyview';
+    v.appendChild(el);
+    setTone(false);
+    const close = () => {
+      el.classList.add('out');
+      setTimeout(() => el.remove(), 250);
+      setTone(true);
+      $$('[data-story]', v).forEach(b => { if (I.accounts[b.dataset.story]?.storySeen) $('.ig-ring', b).classList.add('seen'); });
+    };
+    const show = () => {
+      const h = list[idx], a = I.accounts[h];
+      a.storySeen = true;
+      el.innerHTML = `
+        <img class="sv-img" src="${esc(a.story)}" alt="${esc(h)} 스토리">
+        <div class="sv-top"><div class="sv-bar"><i></i></div>
+          <div class="sv-who">${igAcctAv(h, 0, 'sm')}<strong>${t(h)}</strong><button class="sv-x" aria-label="닫기"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div></div>
+        <button class="sv-tap prev" aria-label="이전 스토리"></button><button class="sv-tap next" aria-label="다음 스토리"></button>
+        <div class="sv-bottom"><span class="sv-msg">메시지 보내기</span>${IG.heart.replace('fill="none"', 'fill="none" style="color:#fff"')}${IG.send.replace('fill="none"', 'fill="none" style="color:#fff"')}</div>`;
+      const img = $('.sv-img', el), bar = $('.sv-bar i', el);
+      bar.style.animationPlayState = 'paused';
+      const start = () => { bar.style.animationPlayState = 'running'; };
+      if (img.complete) start(); else { img.addEventListener('load', start); img.addEventListener('error', start); }
+      bar.addEventListener('animationend', () => go(1));
+      $('.sv-x', el).addEventListener('click', close);
+      $('.sv-tap.prev', el).addEventListener('click', () => go(-1));
+      $('.sv-tap.next', el).addEventListener('click', () => go(1));
+    };
+    const go = d => {
+      const n = idx + d;
+      if (n < 0) { show(); return; }
+      if (n >= list.length) { close(); return; }
+      idx = n; show();
+    };
+    show();
+  }
+  const igTabs = on => `<nav class="ig-tabs"><button data-ig="home" aria-label="홈">${IG.home}</button>${IG.search}${IG.plus}${IG.reels}<button data-ig="me" class="ig-me ${on === 'me' ? 'on' : ''}" aria-label="내 프로필">${igMine('sm')}</button></nav>`;
+  function wireIgTabs(v) {
+    $('[data-ig="home"]', v).addEventListener('click', () => renderInsta());
+    $('[data-ig="me"]', v).addEventListener('click', () => renderInstaProfile());
+  }
+  function renderInstaProfile(tab) {
+    const I = DATA.instagram;
+    const GRID = '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="1"/><path d="M9 3v18M15 3v18M3 9h18M3 15h18"/></svg>';
+    const TAG = '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M9 4H5v16h14V4h-4l-3-2z"/><circle cx="12" cy="10" r="2.6"/><path d="M7.5 17c.8-2 2.5-3 4.5-3s3.7 1 4.5 3"/></svg>';
+    const v = mount(`
+      <header class="igp-head">
+        <span class="igp-handle">${t(I.handle)}<svg viewBox="0 0 12 8" width="11" height="8" aria-hidden="true"><path d="M1 1.5 6 6l5-4.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        <span class="ig-head-icons">${IG.plus}<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg></span>
+      </header>
+      <div class="scroll">
+        <div class="igp-top">
+          <span class="igp-av">${igMine('lg')}</span>
+          <div class="igp-stats">
+            <p><b>${I.posts.length}</b><span>게시물</span></p>
+            <p><b>${t(I.followers)}</b><span>팔로워</span></p>
+            <button id="igFollowing"><b>${t(I.following)}</b><span>팔로잉</span></button>
+          </div>
+        </div>
+        <p class="igp-name">${t(I.displayName)}</p>
+        ${I.bio ? `<p class="igp-bio">${t(I.bio)}</p>` : ''}
+        <div class="igp-btns"><span>프로필 편집</span><span>프로필 공유</span></div>
+        <div class="igp-tabs"><button data-tab="grid" class="${tab !== 'reels' ? 'on' : ''}" aria-label="게시물">${GRID}</button><button data-tab="reels" class="${tab === 'reels' ? 'on' : ''}" aria-label="릴스">${IG.reels}</button><span>${TAG}</span></div>
+        ${tab === 'reels' ? `<div class="igp-grid">${(I.reels || []).map((r, i) => `<button class="igp-reel" data-r="${i}" aria-label="릴스 ${i + 1}"><img src="${esc(r.thumb)}" alt="" loading="lazy"><span class="igp-views"><svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true"><path d="M7 4.5v15l12.5-7.5z"/></svg>${t(r.views)}</span></button>`).join('')}</div>${(I.reels || []).length ? '' : '<div class="igp-empty"><p>릴스 없음</p></div>'}` : `<div class="igp-grid">${I.posts.map((p, i) => `<button class="igp-cell" data-i="${i}" aria-label="게시물 ${i + 1}">${phEl(p.srcs ? { src: p.srcs[0] } : p.src ? { src: p.src } : (DATA.otherPhotos[p.photo] || {}), i)}${p.srcs ? '<svg class="igp-multi" viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M7 3h11a3 3 0 0 1 3 3v11h-2V6a1 1 0 0 0-1-1H7z"/><rect x="3" y="7" width="14" height="14" rx="2.5"/></svg>' : ''}</button>`).join('')}</div>`}
+      </div>
+      ${igTabs('me')}`);
+    $$('[data-tab]', v).forEach(b => b.addEventListener('click', () => { if ((b.dataset.tab === 'reels') !== (tab === 'reels')) { const y = $('.scroll', v).scrollTop; renderInstaProfile(b.dataset.tab); $('.app .scroll').scrollTop = y; } }));
+    $$('.igp-reel', v).forEach(b => b.addEventListener('click', () => openReel(v, +b.dataset.r)));
+    wireIgTabs(v);
+    $$('.igp-cell', v).forEach(b => b.addEventListener('click', () => renderMyPosts(+b.dataset.i)));
+    $('#igFollowing', v).addEventListener('click', () => renderInstaFollowing());
+  }
+  /* 릴스 보기 */
+  function openReel(v, start) {
+    const I = DATA.instagram, list = I.reels || [];
+    let idx = start;
+    const el = document.createElement('div');
+    el.className = 'ig-reelview';
+    v.appendChild(el);
+    setTone(false);
+    const close = () => { const vid = $('video', el); vid?.pause(); el.classList.add('out'); setTimeout(() => el.remove(), 250); setTone(true); };
+    const show = () => {
+      const r = list[idx];
+      el.innerHTML = `
+        <video src="${esc(r.src)}" poster="${esc(r.thumb)}" playsinline loop autoplay preload="auto"></video>
+        <div class="rv-top"><button class="rv-x" aria-label="닫기">${ICON.chev.replace('width="12" height="20"', 'width="12" height="20" style="color:#fff"')}</button><strong>릴스</strong><span style="width:30px"></span></div>
+        <button class="rv-mute" aria-label="소리">🔇</button>
+        <div class="rv-side">${IG.heart.replace('fill="none"', 'fill="none" style="color:#fff"')}<span>${t(r.likes)}</span>${IG.comment.replace('fill="none"', 'fill="none" style="color:#fff"')}<span>${t(r.comments)}</span>${IG.send.replace('fill="none"', 'fill="none" style="color:#fff"')}<button class="rv-more" aria-label="릴스 옵션">···</button></div>
+        <div class="rv-bottom"><div class="rv-who">${igMine('sm')}<strong>${t(I.handle)}</strong></div>${r.caption ? `<p>${t(r.caption)}</p>` : ''}</div>
+        ${list.length > 1 ? `<button class="rv-nav prev" aria-label="이전 릴스" ${idx === 0 ? 'hidden' : ''}>${ICON.chev.replace('width="12" height="20"', 'width="9" height="15"')}</button><button class="rv-nav next" aria-label="다음 릴스" ${idx === list.length - 1 ? 'hidden' : ''}>${ICON.chevR.replace('width="12" height="20"', 'width="9" height="15"')}</button>` : ''}`;
+      const vid = $('video', el), mute = $('.rv-mute', el);
+      vid.muted = false;
+      vid.play().catch(() => { vid.muted = true; mute.textContent = '🔇'; vid.play().catch(() => {}); });
+      mute.textContent = vid.muted ? '🔇' : '🔊';
+      mute.addEventListener('click', e => { e.stopPropagation(); vid.muted = !vid.muted; mute.textContent = vid.muted ? '🔇' : '🔊'; if (vid.paused) vid.play().catch(() => {}); });
+      vid.addEventListener('click', () => { if (vid.paused) vid.play().catch(() => {}); else vid.pause(); });
+      $('.rv-x', el).addEventListener('click', close);
+      $('.rv-more', el).addEventListener('click', e => {
+        e.stopPropagation();
+        const sheet = document.createElement('div');
+        sheet.className = 'ig-sheet-bg';
+        sheet.innerHTML = '<div class="ig-sheet" role="dialog" aria-label="릴스 옵션"><span class="ig-grab"></span><button class="ig-sheet-item red" data-del>삭제</button><button class="ig-sheet-item" data-cancel>취소</button></div>';
+        el.appendChild(sheet);
+        const closeSheet = () => { sheet.classList.add('out'); setTimeout(() => sheet.remove(), 250); };
+        sheet.addEventListener('click', ev => {
+          ev.stopPropagation();
+          if (ev.target.closest('[data-del]')) {
+            closeSheet();
+            setTimeout(() => {
+              const bg = document.createElement('div');
+              bg.className = 'alert-bg';
+              bg.innerHTML = '<div class="alert" role="alertdialog"><p>릴스를 삭제하시겠어요?<small>삭제한 릴스는 복구할 수 없어요.</small></p><button type="button" data-yes>삭제</button><button type="button" class="plain" data-no>취소</button></div>';
+              el.appendChild(bg);
+              bg.addEventListener('click', ev2 => {
+                ev2.stopPropagation();
+                if (ev2.target.closest('[data-yes]')) {
+                  list.splice(idx, 1);
+                  $('video', el)?.pause();
+                  el.remove(); setTone(true);
+                  renderInstaProfile('reels');
+                  toast('릴스가 삭제되었어요');
+                } else if (ev2.target.closest('[data-no]')) bg.remove();
+              });
+            }, 200);
+          } else if (ev.target.closest('[data-cancel]') || !ev.target.closest('.ig-sheet')) closeSheet();
+        });
+      });
+      $('.rv-nav.prev', el)?.addEventListener('click', () => { idx--; show(); });
+      $('.rv-nav.next', el)?.addEventListener('click', () => { idx++; show(); });
+      let y0 = null;
+      el.onpointerdown = e => { if (!e.target.closest('button')) y0 = e.clientY; };
+      el.onpointerup = e => { if (y0 == null) return; const dy = e.clientY - y0; y0 = null; if (dy < -60 && idx < list.length - 1) { idx++; show(); } else if (dy > 60 && idx > 0) { idx--; show(); } };
+    };
+    show();
+  }
+  const igAcctAv = (h, i, size) => { const a = DATA.instagram.accounts?.[h]; return a?.avatar ? `<span class="ig-av photo ${size}" style="background-image:url('${esc(a.avatar)}')" aria-hidden="true"></span>` : igav(h, i, size); };
+  function renderInstaFollowing() {
+    const I = DATA.instagram;
+    const v = mount(`
+      <header class="nav"><div class="nav-row" style="color:#000">${backBtn('').replace('class="back"', 'class="back" style="color:#000"')}<strong style="font-size:17px">${t(I.handle)}</strong><span style="width:34px"></span></div></header>
+      <div class="igf-tabs"><span>팔로워 ${t(I.followers)}명</span><span class="on">팔로잉 ${t(I.following)}명</span></div>
+      <div class="scroll">
+        <div class="searchbar" style="margin:12px 14px 6px">${ICON.search}<span>검색</span></div>
+        ${I.followingList.map((h, i) => `<button class="igf-row" data-h="${esc(h)}">${igAcctAv(h, i + 1, '')}<span class="igf-mid"><strong>${t(h)}</strong>${I.accounts?.[h]?.name ? `<span>${t(I.accounts[h].name)}</span>` : ''}</span>${I.accounts?.[h]?.unfollowed ? '<span class="igf-btn blue">팔로우</span>' : '<span class="igf-btn">팔로잉</span>'}</button>`).join('')}
+      </div>`, { anim: true });
+    $('[data-back]', v).addEventListener('click', () => renderInstaProfile());
+    $$('.igf-row', v).forEach(b => b.addEventListener('click', () => { if (I.accounts?.[b.dataset.h]?.followers != null) renderInstaAccount(b.dataset.h); }));
+  }
+  /* 다른 계정 게시물 보기 */
+  function renderAccountPosts(h, start) {
+    const a = DATA.instagram.accounts[h];
+    const chevS = d => ICON[d].replace('width="12" height="20"', 'width="7" height="12"');
+    const v = mount(`
+      <header class="nav"><div class="nav-row" style="color:#000">${backBtn('').replace('class="back"', 'class="back" style="color:#000"')}<span style="text-align:center"><small style="display:block;font-size:12px;color:#737373;font-weight:600">${t(h)}</small><strong style="font-size:16px">게시물</strong></span><span style="width:34px"></span></div></header>
+      <div class="scroll">${a.posts.map((p, i) => `
+        <article class="ig-post" data-i="${i}">
+          <div class="ig-post-head">${igAcctAv(h, 0, 'sm')}<span>${t(h)}${p.location ? `<small>${t(p.location)}</small>` : ''}</span><span class="more">···</span></div>
+          <div class="ig-img">${p.srcs.length > 1 ? `<div class="ig-car">${p.srcs.map((src, k) => phEl({ src }, k)).join('')}</div><span class="ig-count">1/${p.srcs.length}</span><button class="ig-arr prev" aria-label="이전" hidden>${chevS('chev')}</button><button class="ig-arr next" aria-label="다음">${chevS('chevR')}</button>` : `<div class="ig-car">${phEl({ src: p.srcs[0] }, 0)}</div>`}<span class="ig-bigheart">${IG.heartFill.replace(/26/g, '96')}</span></div>
+          <div class="ig-actions">${p.srcs.length > 1 ? `<span class="ig-dots">${p.srcs.map((_, k) => `<i class="${k ? '' : 'on'}"></i>`).join('')}</span>` : ''}<button class="ig-like ${p.liked ? 'on' : ''}" aria-label="좋아요">${p.liked ? IG.heartFill : IG.heart}</button>${IG.comment}${IG.send}<span class="save">${IG.save}</span></div>
+          ${p.likes != null ? `<p class="ig-likes" data-likes>${igLikes(p)}</p>` : ''}
+          <p class="ig-cap"><b>${t(h)}</b>${t(p.caption).replace(/@([\w.]+)/g, '<span class="ig-at">@$1</span>')}</p>
+          ${p.comments?.length > 2 ? `<button class="ig-more">댓글 ${p.comments.length}개 모두 보기</button>` : ''}
+          ${(p.comments || []).map((c, ci, arr) => `<p class="ig-cmt"${ci < arr.length - 2 ? ' hidden' : ''}><b>${t(c.who)}</b>${t(c.text).replace(/@([\w.]+)/g, '<span class="ig-at">@$1</span>')}</p>`).join('')}
+          ${p.time ? `<p class="ig-time">${t(p.time)}</p>` : ''}
+        </article>`).join('')}
+      </div>`, { anim: true });
+    $('[data-back]', v).addEventListener('click', () => renderInstaAccount(h));
+    $$('.ig-post', v).forEach(post => {
+      const p = a.posts[+post.dataset.i];
+      const like = $('.ig-like', post);
+      const setLike = on => { p.liked = on; if (p.likes != null) { p.likes += on ? 1 : -1; $('[data-likes]', post).textContent = igLikes(p); } like.classList.toggle('on', on); like.innerHTML = on ? IG.heartFill : IG.heart; };
+      like.addEventListener('click', () => setLike(!p.liked));
+      let last = 0;
+      $('.ig-img', post).addEventListener('click', () => { const now = Date.now(); if (now - last < 320) { if (!p.liked) setLike(true); const hh = $('.ig-bigheart', post); hh.classList.remove('go'); void hh.offsetWidth; hh.classList.add('go'); } last = now; });
+      $('.ig-more', post)?.addEventListener('click', e => { $$('.ig-cmt[hidden]', post).forEach(c => c.hidden = false); e.currentTarget.remove(); });
+      const car = $('.ig-car', post), cnt = $('.ig-count', post);
+      if (car && cnt) {
+        const n = car.children.length, dots = $$('.ig-dots i', post), prev = $('.ig-arr.prev', post), next = $('.ig-arr.next', post);
+        car.addEventListener('scroll', () => { const k = Math.round(car.scrollLeft / car.clientWidth); cnt.textContent = `${k + 1}/${n}`; dots.forEach((d, j) => d.classList.toggle('on', j === k)); prev.hidden = k === 0; next.hidden = k === n - 1; }, { passive: true });
+        const go = d => car.scrollTo({ left: (Math.round(car.scrollLeft / car.clientWidth) + d) * car.clientWidth, behavior: 'smooth' });
+        prev.addEventListener('click', e => { e.stopPropagation(); go(-1); });
+        next.addEventListener('click', e => { e.stopPropagation(); go(1); });
+      }
+    });
+    const sc = $('.scroll', v), el = $(`.ig-post[data-i="${start}"]`, v);
+    if (sc && el) sc.scrollTop = el.offsetTop - sc.offsetTop;
+  }
+  const igCount = v => { const n = Number(v); return n >= 10000 ? `${Math.floor(n / 1000) / 10}만` : n.toLocaleString(); };
+  function renderInstaAccount(h) {
+    const a = DATA.instagram.accounts[h];
+    const GRID = '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="1"/><path d="M9 3v18M15 3v18M3 9h18M3 15h18"/></svg>';
+    const TAG = '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M9 4H5v16h14V4h-4l-3-2z"/><circle cx="12" cy="10" r="2.6"/><path d="M7.5 17c.8-2 2.5-3 4.5-3s3.7 1 4.5 3"/></svg>';
+    const posts = a.posts || [];
+    const v = mount(`
+      <header class="nav"><div class="nav-row" style="color:#000">${backBtn('').replace('class="back"', 'class="back" style="color:#000"')}<strong style="font-size:17px">${t(h)}</strong><svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg></div></header>
+      <div class="scroll">
+        <div class="igp-top">
+          <span class="igp-av">${igAcctAv(h, 0, 'lg')}</span>
+          <div class="igp-stats">
+            <p><b>${posts.length}</b><span>게시물</span></p>
+            <p><b id="igAcctFollowers">${igCount(a.followers)}</b><span>팔로워</span></p>
+            <p><b>${igCount(a.following)}</b><span>팔로잉</span></p>
+          </div>
+        </div>
+        ${a.name ? `<p class="igp-name">${t(a.name)}</p>` : ''}
+        ${a.bio && !a.unfollowed ? `<div class="igp-bio-wrap" id="igBio"><p class="igp-bio">${t(a.bio).replace(/@([\w.]+)/g, '<span class="ig-at">@$1</span>')}</p></div>` : ''}
+        <div class="igp-btns"><button id="igFollowBtn"></button><button id="igMsgBtn">메시지</button></div>
+        ${a.highlights?.length ? `<div class="igp-hl">${a.highlights.map((hl, hi) => `<button class="igp-hl-item" data-hl="${hi}"><span class="igp-hl-ring"><span class="igp-hl-cover" style="background-image:url('${esc(hl.cover)}')"></span></span><span>${t(hl.title)}</span></button>`).join('')}</div>` : ''}
+        <div class="igp-tabs"><span class="on">${GRID}</span><span>${IG.reels}</span><span>${TAG}</span></div>
+        ${posts.length ? `<div class="igp-grid">${posts.map((p, i) => `<button class="igp-cell" data-i="${i}" aria-label="게시물 ${i + 1}">${phEl({ src: p.srcs ? p.srcs[0] : p.src }, i)}${p.srcs?.length > 1 ? '<svg class="igp-multi" viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M7 3h11a3 3 0 0 1 3 3v11h-2V6a1 1 0 0 0-1-1H7z"/><rect x="3" y="7" width="14" height="14" rx="2.5"/></svg>' : ''}</button>`).join('')}</div>` : '<div class="igp-empty"><span>' + IG.plus.replace(/26/g, '40') + '</span><p>게시물 없음</p></div>'}
+      </div>`, { anim: true });
+    $('[data-back]', v).addEventListener('click', () => renderInstaFollowing());
+    $$('.igp-cell', v).forEach(b => b.addEventListener('click', () => renderAccountPosts(h, +b.dataset.i)));
+    $('#igMsgBtn', v).addEventListener('click', () => { if (DATA.instagram.dms.some(x => x.who === h)) renderIgChat(h, () => renderInstaAccount(h)); });
+    $$('[data-hl]', v).forEach(b => b.addEventListener('click', () => openHighlight(v, h, a.highlights[+b.dataset.hl])));
+    const fBtn = $('#igFollowBtn', v);
+    const drawFollow = () => {
+      fBtn.className = a.unfollowed ? 'blue' : '';
+      fBtn.innerHTML = a.unfollowed ? '팔로우' : '팔로잉 <svg viewBox="0 0 12 8" width="10" height="7" aria-hidden="true"><path d="M1 1.5 6 6l5-4.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+      $('#igAcctFollowers', v).textContent = igCount(a.followers);
+    };
+    const setFollow = on => {
+      if (!!a.unfollowed === !on) return;
+      a.unfollowed = !on;
+      const d = on ? 1 : -1;
+      a.followers = String(Number(a.followers) + d);
+      DATA.instagram.following = String(Number(DATA.instagram.following) + d);
+      drawFollow();
+    };
+    drawFollow();
+    fBtn.addEventListener('click', () => {
+      if (a.unfollowed) { setFollow(true); return; }
+      const bg = document.createElement('div');
+      bg.className = 'ig-sheet-bg';
+      bg.innerHTML = `<div class="ig-sheet" role="dialog" aria-label="${esc(h)}"><span class="ig-grab"></span><div class="ig-sheet-who">${igAcctAv(h, 0, 'sm')}<strong>${t(h)}</strong></div><button class="ig-sheet-item red" data-unf>팔로우 취소</button></div>`;
+      v.appendChild(bg);
+      const close = () => { bg.classList.add('out'); setTimeout(() => bg.remove(), 250); };
+      bg.addEventListener('click', e => {
+        if (e.target.closest('[data-unf]')) { setFollow(false); close(); }
+        else if (!e.target.closest('.ig-sheet')) close();
+      });
+    });
+    const bio = $('#igBio', v);
+    if (bio && a.bioDisappearAfter) setTimeout(() => {
+      if (!bio.isConnected) return;
+      bio.style.height = bio.offsetHeight + 'px';
+      void bio.offsetHeight;
+      bio.classList.add('gone');
+    }, a.bioDisappearAfter);
+  }
+  function renderInstaActivity() {
+    const v = mount(`
+      <header class="nav"><div class="nav-row" style="color:#000">${backBtn('').replace('class="back"', 'class="back" style="color:#000"')}<strong style="font-size:17px">알림</strong><span style="width:34px"></span></div></header>
+      <div class="scroll">
+        <h2 class="ig-sec">오늘</h2>
+        ${DATA.instagram.activity.map((a, i) => `<div class="ig-act-row">${igav(a.who, i + 2, 'sm').replace('ig-av sm', 'ig-av sm')}<p><b>${t(a.who)}</b>${t(a.text)}<time>${t(a.time)}</time></p>${a.photo != null ? `<span class="ig-thumb">${phEl(DATA.otherPhotos[a.photo], a.photo)}</span>` : ''}</div>`).join('')}
+      </div>`, { anim: true });
+    $('[data-back]', v).addEventListener('click', () => renderInsta());
+  }
+  function renderInstaDm() {
+    const v = mount(`
+      <header class="nav"><div class="nav-row" style="color:#000">${backBtn('').replace('class="back"', 'class="back" style="color:#000"')}<strong style="font-size:17px">${t(DATA.instagram.handle)}</strong>${ICON.compose}</div>
+        <div class="searchbar">${ICON.search}<span>검색</span></div></header>
+      <div class="scroll">
+        <h2 class="ig-sec">메시지</h2>
+        ${DATA.instagram.dms.map((d, i) => { const last = d.chat?.length ? d.chat[d.chat.length - 1] : null; return `<button class="ig-dm-row" data-dm="${i}">${igAcctAv(d.who, i + 3, '')}<span class="ig-dm-mid ${d.unread ? 'new' : ''}"><strong>${t(d.who)}</strong><span>${last ? (last.from === 'me' ? '회원님: ' : '') + t(last.text) : t(d.text)} · ${t(d.time)}</span></span>${d.unread ? '<span class="ig-blue"></span>' : ''}</button>`; }).join('')}
+      </div>`, { anim: true });
+    $('[data-back]', v).addEventListener('click', () => renderInsta());
+    $$('[data-dm]', v).forEach(b => b.addEventListener('click', () => { const d = DATA.instagram.dms[+b.dataset.dm]; if (d.chat) renderIgChat(d.who, () => renderInstaDm()); }));
+  }
+  /* 인스타 DM 대화 */
+  function renderIgChat(h, back) {
+    const d = DATA.instagram.dms.find(x => x.who === h);
+    if (!d) return;
+    d.unread = false;
+    d.chat = d.chat || [];
+    const v = mount(`
+      <header class="igc-head">${backBtn('').replace('class="back"', 'class="back" style="color:#000"')}${igAcctAv(h, 0, 'sm')}<strong>${t(h)}</strong></header>
+      <div class="igc-body" id="igcBody" aria-live="polite"></div>
+      <div class="igc-quick" id="igcQuick">${(d.triggers || []).filter(tr => tr.quick && !tr.used).map((tr, i) => `<button type="button" data-q="${i}">${t(tr.quick)}</button>`).join('')}</div>
+      <form class="igc-input" id="igcForm" autocomplete="off"><input id="igcText" autocomplete="off" autocorrect="off" spellcheck="false" data-form-type="other" placeholder="메시지 보내기..." aria-label="메시지 입력" enterkeyhint="send" ${d.canType ? '' : 'readonly tabindex="-1"'}><button type="submit" disabled>보내기</button></form>`, { anim: true });
+    const body = $('#igcBody', v), input = $('#igcText', v), send = $('.igc-input button', v);
+    const add = (m, anim) => {
+      const el = document.createElement('div');
+      const prev = body.lastElementChild;
+      el.className = `igc-msg ${m.from}${prev?.classList.contains(m.from) ? ' cont' : ''}${anim ? '' : ' still'}`;
+      el.innerHTML = m.from === 'me' ? `<span class="igc-bub">${t(m.text)}</span>` : `${igAcctAv(h, 0, 'sm')}<span class="igc-bub">${t(m.text)}</span>`;
+      body.appendChild(el);
+      body.scrollTop = body.scrollHeight;
+    };
+    d.chat.forEach(m => add(m, false));
+    $('[data-back]', v).addEventListener('click', back);
+    input.addEventListener('input', () => { send.disabled = !input.value.trim(); });
+    imeEnter(input);
+    const quickBox = $('#igcQuick', v);
+    $$('[data-q]', quickBox).forEach(b => b.addEventListener('click', () => { const tr = (d.triggers || []).filter(x => x.quick && !x.used)[+b.dataset.q]; if (tr) sendText(tr.quick); }));
+    $('#igcForm', v).addEventListener('submit', e => { if (!d.canType) { e.preventDefault(); e.stopImmediatePropagation(); } }, true);
+    $('#igcForm', v).addEventListener('submit', e => {
+      e.preventDefault();
+      const text = input.value.trim();
+      if (!text) return;
+      input.value = ''; send.disabled = true;
+      sendText(text);
+    });
+    async function sendText(text) {
+      const m = { from: 'me', text };
+      d.chat.push(m); d.time = '방금'; add(m, true);
+      const norm = x => x.replace(/[\s.,!?~ㅠㅜ]/g, '');
+      const trig = (d.triggers || []).find(tr => norm(text).includes(norm(tr.when)) || (tr.keywords || []).every(k => norm(text).includes(k)) && (tr.keywords || []).length);
+      if (trig?.deletePosts) { const acc = DATA.instagram.accounts[h]; if (acc) { acc.posts = []; acc.bio = ''; } }
+      if (!trig) return;
+      trig.used = true;
+      $$('[data-q]', quickBox).forEach(b => b.remove());
+      for (const r of trig.replies) {
+        await wait(900);
+        if (!body.isConnected) { d.chat.push({ from: 'them', text: r }); continue; }
+        const ty = document.createElement('div');
+        ty.className = 'igc-msg them cont';
+        ty.innerHTML = `${igAcctAv(h, 0, 'sm')}<span class="igc-bub igc-typing"><i></i><i></i><i></i></span>`;
+        body.appendChild(ty); body.scrollTop = body.scrollHeight;
+        await wait(1300);
+        ty.remove();
+        const mm = { from: 'them', text: r };
+        d.chat.push(mm);
+        if (body.isConnected) { add(mm, true); buzz(8); }
+      }
+    }
+  }
+
+  /* ---------- 홈 막대 / 측면 버튼 / 키보드 ---------- */
+  /* 전화 수신 화면 */
+  const PHONE_ICON = '<svg viewBox="0 0 24 24" width="34" height="34"><path fill="#fff" d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>';
+  let callEl = null;
+  function showCall(name) {
+    if (callEl) return;
+    const wasDark = phone.classList.contains('dark-ui');
+    setTone(false);
+    callEl = document.createElement('div');
+    callEl.className = 'call';
+    callEl.setAttribute('role', 'dialog');
+    callEl.setAttribute('aria-label', `${name} 전화 수신`);
+    callEl.innerHTML = `
+      <div class="call-top"><p class="cs-sub" id="callSub"></p><p class="cs-name">${esc(name)}</p></div>
+      <div class="call-btns" id="callBtns">
+        <button class="call-btn no" data-call="no"><span style="transform:rotate(135deg)">${PHONE_ICON}</span>거절</button>
+        <button class="call-btn yes" data-call="yes"><span>${PHONE_ICON}</span>수락</button>
+      </div>`;
+    phone.appendChild(callEl);
+    const voice = new Audio('audio/yeoboseyo.mp3');
+    voice.preload = 'auto';
+    const voice2 = new Audio('audio/bogosipeosseo.mp3');
+    voice2.preload = 'auto';
+    let voiceTimer = null, voice2Timer = null;
+    voice.addEventListener('ended', () => { voice2Timer = setTimeout(() => { if (callEl) { voice2.currentTime = 0; voice2.play().catch(() => {}); } }, 3000); });
+    const ringTimer = setInterval(() => buzz([400, 200, 400]), 2000);
+    buzz([400, 200, 400]);
+    let tickTimer = null;
+    const missTimer = setTimeout(() => end(), 30000);
+    const end = () => {
+      clearInterval(ringTimer); clearInterval(tickTimer); clearTimeout(missTimer); clearTimeout(voiceTimer); clearTimeout(voice2Timer);
+      try { voice.pause(); voice2.pause(); } catch (_) {}
+      const el = callEl;
+      el.classList.add('out');
+      setTimeout(() => el.remove(), 350);
+      callEl = null;
+      setTone(wasDark && !!currentApp);
+    };
+    callEl.addEventListener('click', e => {
+      const b = e.target.closest('[data-call]');
+      if (!b) return;
+      if (b.dataset.call === 'no' || b.dataset.call === 'end') { end(); return; }
+      clearInterval(ringTimer); clearTimeout(missTimer); buzz(0);
+      callEl.classList.add('live');
+      try { voice.load(); voice2.load(); } catch (_) {}
+      voiceTimer = setTimeout(() => { voice.currentTime = 0; voice.play().catch(() => {}); }, 600);
+      $('#callBtns', callEl).innerHTML = `<button class="call-btn no" data-call="end"><span style="transform:rotate(135deg)">${PHONE_ICON}</span>종료</button>`;
+      let sec = 0;
+      const sub = $('#callSub', callEl);
+      sub.textContent = '00:00';
+      tickTimer = setInterval(() => { sec++; sub.textContent = `${String(Math.floor(sec / 60)).padStart(2, '0')}:${String(sec % 60).padStart(2, '0')}`; }, 1000);
+    });
+  }
+
+  function homeAction() {
+    if (callEl) return;
+    const s = phone.dataset.screen;
+    if (s === 's-lock') unlock();
+    else if (s === 's-home') closeApp();
+  }
+  const hb = $('#homeBar');
+  let hbDown = false;
+  hb.addEventListener('pointerdown', () => { hbDown = true; });
+  addEventListener('pointerup', () => { if (hbDown) { hbDown = false; homeAction(); } });
+  hb.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); homeAction(); } });
+
+  $('#power').addEventListener('click', () => {
+    if (phone.dataset.screen === 's-name') return;
+    app.classList.remove('open');
+    app.innerHTML = '';
+    currentApp = null;
+    setTone(false);
+    pending = null;
+    show('s-off');
+  });
+
+  addEventListener('keydown', e => {
+    if (e.target.matches('input')) return;
+    const s = phone.dataset.screen;
+    if (s === 's-off' && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); wake(); }
+    else if (s === 's-lock' && ['ArrowUp', 'Enter', ' '].includes(e.key)) { e.preventDefault(); unlock(); }
+    else if (s === 's-pass') {
+      if (/^\d$/.test(e.key)) press(e.key);
+      else if (e.key === 'Backspace' && code) { code = code.slice(0, -1); drawDots(); }
+      else if (e.key === 'Escape') $('#cancelBtn').click();
+    } else if (s === 's-home' && currentApp) {
+      const vw = $('.viewer');
+      if (vw && e.key === 'ArrowLeft') vw.go(-1);
+      else if (vw && e.key === 'ArrowRight') vw.go(1);
+      else if (e.key === 'Escape') vw ? vw.close() : closeApp();
+    }
+  });
+
+  if (!matchMedia('(pointer:coarse)').matches) $('#nameInput').focus({ preventScroll: true });
+});
+</script>
+
+<script>
+/* =====================================================================
+   데이터 (여기 글자만 바꾸면 돼요)
+
+   - {name}      → 처음에 입력한 이름으로 바뀌어요 (예: 지아)
+   - {name아}    → 받침에 맞춰 "지아야 / 서연아" 처럼 바뀌어요
+   - {boyfriend} → 아래 boyfriend 값으로 바뀌어요
+   - 따옴표 안의 글자만 바꾸고, 쉼표(,)와 괄호는 지우지 마세요.
+   - 줄바꿈은 \n 으로 써요.
+   ===================================================================== */
+const DATA = {
+  boyfriend: '재유니',
+  defaultOwner: '지아',            // 이름을 비워두고 시작했을 때 쓸 이름
+  dayCount: 599,                  // 홈 화면 위젯에 보이는 '함께한 지 N일' (비우면 startDate로 계산)
+  startDate: '2025-10-09',         // 사귀기 시작한 날 (D-day 계산용)
+  passcode: '1009',                // 잠금 암호
+  passcodeHint: '우리가 사귄 날 (월일 네 자리)',  // 두 번 틀리면 보이는 힌트
+  lockWidget: '',       // 잠금화면 연애 날짜 위젯 제거
+  notificationInterval: 1100,      // 알림이 하나씩 올라오는 간격 (밀리초)
+
+  /* ---------- 잠금화면 알림 (위에서부터 순서대로 올라와요) ----------
+     app: messages / photos / phone / notes / search / calendar 중 하나
+     chat: 메시지 알림을 눌렀을 때 열릴 대화 번호 (0 = 첫 번째 대화) */
+  notifications: [
+    { app: 'kakao', title: '심재윤', body: '자?', time: '오전 3:00', chat: 0 },
+    { app: 'kakao', title: '심재윤', body: '보고싶어', time: '오전 3:00', chat: 0 },
+    { app: 'instagram', title: 'chichi_', body: '아 샤갈 개추워 얼어뒤진다 오늘', time: '지금', open: 'dm' },
+    { app: 'instagram', title: 'ogweof', body: '너 헤어졌어?', time: '지금', open: 'dm' },
+    { app: 'instagram', title: 'Instagram', body: '은진 (@wieeie ) 님이 회원님의 게시물에 좋아요를 눌렀습니다.', time: '지금', open: 'activity' },
+  ],
+
+  /* ---------- 카카오톡 ----------
+     group: true 인 단톡방은 who 로 보낸 사람 이름을 써요
+     incoming: 방을 처음 열면 상대가 보내는 메시지
+     autoReplies: 내가 입력해서 보내면 돌아오는 답장 */
+  kakao: [
+    {
+      name: '심재윤', love: true, avatar: 'kakao/profile.jpg', canType: true, unread: 0, time: '오전 3:00',
+      chat: [
+        { divider: '2026년 10월 12일 월요일' },
+        { from: 'them', photo: 'kakao/1.jpg', time: '오후 12:58' },
+        { from: 'them', text: '{name이}당', time: '오후 12:58' },
+        { from: 'them', text: '여기서 뭐해', time: '오후 12:58' },
+        { from: 'me',   text: 'ㅋㅋㅋㅋ뭐야 귀여워', time: '오후 12:58' },
+        { from: 'me',   text: '안피곤해? 오늘 일찍 일어났자나', time: '오후 12:58' },
+        { from: 'them', text: '{name이} 얼굴보면 힘날거 같은데엥~~', time: '오후 12:58' },
+        { divider: '2026년 10월 13일 화요일' },
+        { from: 'them', photo: 'kakao/2.jpg', time: '오후 4:42' },
+        { from: 'them', text: '오늘두 화이팅', time: '오후 4:42' },
+        { from: 'them', text: '사랑해', time: '오후 4:42' },
+        { divider: '2026년 10월 15일 목요일' },
+        { from: 'them', text: '자기~~', time: '오후 11:42' },
+        { from: 'them', text: '오늘 나 먼저 잠들거같아', time: '오후 11:42' },
+        { from: 'them', text: '꿈에서 보자 자기', time: '오후 11:42' },
+        { from: 'them', text: '기다릴게', time: '오후 11:42' },
+        { divider: '2026년 10월 16일 금요일' },
+        { from: 'me',   text: '자?', time: '오전 10:12' },
+        { from: 'me',   text: '피곤한가보네', time: '오전 10:12' },
+        { from: 'me',   text: '잘자~~', time: '오전 10:12' },
+        { divider: '2026년 10월 17일 토요일' },
+        { from: 'me',   text: '어디서 볼까?', time: '오후 12:27' },
+        { from: 'them', text: '헉,, 미안..', time: '오후 12:27' },
+        { from: 'them', text: '정원이랑 약속있는걸 까먹었어', time: '오후 12:27' },
+        { from: 'me',   text: '아', time: '오후 12:27' },
+        { from: 'me',   text: '뭐 어쩔 수 없지', time: '오후 12:27' },
+        { from: 'me',   text: '재밌게 놀아', time: '오후 12:27' },
+        { divider: '2026년 10월 19일 월요일' },
+        { from: 'me',   text: '요즘 많이바쁜가보네', time: '오전 9:13' },
+        { from: 'me',   text: '날 추워지는데 감기 조심해', time: '오전 9:13' },
+        { from: 'me',   text: '난 밥먹는중', time: '오전 9:13' },
+        { divider: '2026년 10월 20일 화요일' },
+        { from: 'me',   text: '얘기 좀 하자', time: '오후 10:28' },
+        { from: 'me',   text: '요즘 힘든 일 있어?', time: '오후 10:28' },
+        { from: 'them', text: '그냥.. 좀 피곤하네', time: '오후 10:28' },
+        { from: 'me',   text: '피곤한 거 맞아?', time: '오후 10:28' },
+        { from: 'them', text: '사실', time: '오후 10:28' },
+        { from: 'them', text: '마음이 조금 식은 거 같아', time: '오후 10:28' },
+        { from: 'them', text: '{name아} 우리', time: '오후 10:28' },
+        { from: 'them', text: '그만하자', time: '오후 10:28' },
+        { from: 'me',   text: '내가 노력해도 안 바뀔 것 같아?', time: '오후 10:28' },
+        { from: 'them', text: '응', time: '오후 10:28' },
+        { from: 'me',   text: '그래', time: '오후 10:28' },
+        { from: 'me',   text: '잘지내', time: '오후 10:28' },
+        { divider: '2026년 10월 23일 금요일' },
+        { from: 'them', text: '자?', time: '오전 3:00' },
+        { from: 'them', text: '보고싶어', time: '오전 3:00' },
+      ],
+      autoReplies: ['ㅋㅋㅋ 빨리 와 보고싶어', '응응 기다릴게', '오늘도 예쁘다', '사랑해 🧡'],
+    },
+    {
+      name: '양정원', avatar: 'kakao/jungwon.jpg', unread: 0, time: '오후 5:34',
+      chat: [
+        { from: 'them', text: '누나 심재윤형이랑 헤어졌어요?', time: '오후 5:34' },
+        { from: 'me',  text: '누가 그래?', time: '오후 5:34' },
+        { from: 'them', text: '종성이형이 말해주던데요', time: '오후 5:34' },
+        { from: 'me',  text: '아..', time: '오후 5:34' },
+        { from: 'me',  text: '뭐 그렇게 됐어', time: '오후 5:34' },
+        { from: 'them', text: '누나 나와요', time: '오후 5:34' },
+        { from: 'me',  text: '?', time: '오후 5:34' },
+        { from: 'them', text: '기분 꿀꿀할땐 딸기라떼 마셔야해요', time: '오후 5:34' },
+        { from: 'me',  text: '그냥 너가 먹고싶은거 아니야?', time: '오후 5:34' },
+        { from: 'them', text: '딸기라떼 마시면서 한강산책이라도 해요', time: '오후 5:34' },
+        { from: 'them', text: '요즘 날도 좋은디', time: '오후 5:34' },
+      ],
+    },
+    {
+      name: '엄마', unread: 0, time: '',
+      chat: [
+        { from: 'them', text: '공주야' },
+        { from: 'them', text: '뭐해' },
+        { from: 'me',   text: '그냥 쉬고있어' },
+        { from: 'them', text: '이번주 주말에 재윤이랑 같이 와' },
+        { from: 'them', text: '집에 고기 한박스 선물왔는데' },
+        { from: 'them', text: '너무 많아서' },
+        { from: 'them', text: '재윤이가 고기 좋아하잖아~' },
+      ],
+    },
+    {
+      name: '박종성', avatar: 'kakao/jongsung.jpg', unread: 0, time: '오전 1:27',
+      chat: [
+        { from: 'them', text: '니네 헤어짐?', time: '오전 1:27' },
+        { from: 'me',  text: 'ㅇㅇ', time: '오전 1:27' },
+        { from: 'them', text: '아 어쩐지', time: '오전 1:27' },
+        { from: 'me',  text: '왜', time: '오전 1:27' },
+        { from: 'them', text: '심재윤 지금 개취함', time: '오전 1:27' },
+        { from: 'them', text: '얘 취한거 오랜만이라서', time: '오전 1:27' },
+        { from: 'me',  text: '적당히 먹이고 집보내', time: '오전 1:27' },
+        { from: 'them', text: '니가 참?', time: '오전 1:27' },
+        { from: 'them', text: '얘 너 이름만 부르면서 운다 ㅁㅊ', time: '오전 1:27' },
+      ],
+    },
+  ],
+
+  /* ---------- 인스타그램 ----------
+     photo: 위 photos 목록의 번호 (0 = 첫 번째 사진)
+     profilePhoto: 내 프로필 사진으로 쓸 사진 번호 */
+  instagram: {
+    handle: 'monchichi_yam',
+    displayName: '{name}',   // 프로필에 보이는 이름
+    bio: '',                 // 프로필 소개글 (비워두면 안 보여요)
+    followers: '68',         // 팔로워 수
+    following: '68',         // 팔로잉 수
+    /* 팔로잉 목록 (위에서부터 순서대로) */
+    /* 홈 화면 스토리에 보이는 계정 (순서대로) */
+    /* 홈 피드에 게시물이 무작위로 섞여 보이는 계정 */
+    feedAccounts: ['yangjungwon_', 'sunoo._.03', 'simplyjjong', 'sunghoon', 'jakesim'],
+    storyList: ['simplyjjong', 'nikiiii', 'sunghoon', 'yangjungwon_', 'sunoo._.03'],
+    /* 내 프로필 > 릴스(가운데 탭) 영상 */
+    reels: [
+      { src: 'reels/2.mp4', thumb: 'reels/2.jpg', views: '2,031', likes: '143', comments: '12', caption: '' },
+      { src: 'reels/3.mp4', thumb: 'reels/3.jpg', views: '867', likes: '71', comments: '4', caption: '' },
+    ],
+    followingList: ['yangjungwon_', 'jakesim', 'engeneya', 'wof_diwo2e4', 'sunoo._.03', 'nikiiii', 'simplyjjong', 'sunghoon',
+      'jaeyuni_', 'chichi_', 'ogweof', 'wieeie', 'jimin.e', 'doyun__',
+      'jongsung_park', 'yang.jw', 'seoyeon_0912', 'haru.cafe', 'minji.log', 'hyunwoo__', 'dear.yuna',
+      'cafe_onion', 'soyeon.kim', 'taeho_j', 'daily.eunbi', 'hanriver_walk', 'nayoung_s', 'jiwoo.zip'],
+    /* 팔로잉 목록에서 눌렀을 때 들어가지는 계정 */
+    accounts: {
+      /* 프로필 사진만 있는 계정 */
+      yangjungwon_: {
+        avatar: 'insta/av_yangjungwon.jpg', story: 'insta/story_yangjungwon.jpg',
+        name: '양정원', followers: '430', following: '33', bio: '',
+        /* 위에서부터 최신 게시물 순서 */
+        posts: [
+          { srcs: ['insta/yj_8.jpg'], likes: 263, likedBy: 'jakesim',
+            caption: '{name이}가 찍어줌 떙큐',
+            comments: [
+              { who: 'monchichi_yam', text: '사진작가나 할까' },
+            ] },
+          { srcs: ['insta/yj_6.jpg', 'insta/yj_7.jpg'], likes: 187, likedBy: 'jakesim',
+            caption: '밤산책 with @monchichi_yam',
+            comments: [
+              { who: 'monchichi_yam', text: 'ㅈㄴ덥다' },
+              { who: 'simplyjjong', text: '{name이}랑 감?' },
+            ] },
+          { srcs: ['insta/yj_4.jpg', 'insta/yj_5.jpg'], likes: 241, likedBy: '',
+            caption: '귀여운 마음이',
+            comments: [
+              { who: 'monchichi_yam', text: '@jakesim 너 여기서 모해' },
+              { who: 'yangjungwon_', text: '@monchichi_yam 댓글차단' },
+            ] },
+          { srcs: ['insta/yj_2.jpg', 'insta/yj_3.jpg'], likes: 152, likedBy: '',
+            caption: '아오 추워라',
+            comments: [
+              { who: 'simplyjjong', text: '너도 스키타러감?' },
+              { who: 'sunoo._.03', text: '올때 맛있는거 사와' },
+            ] },
+          { srcs: ['insta/yj_1.jpg'], likes: 128, likedBy: '',
+            caption: '면접 보러옴',
+            comments: [
+              { who: 'simplyjjong', text: '오 취준생' },
+              { who: 'monchichi_yam', text: '오 잘어울린다' },
+              { who: 'jakesim', text: '@monchichi_yam ㅡㅡ흥' },
+            ] },
+        ],
+      },
+      simplyjjong: {
+        avatar: 'insta/av_simplyjjong.jpg', story: 'insta/story_simplyjjong.jpg',
+        name: '박종성', followers: '128', following: '131', bio: '',
+        posts: [
+          { srcs: ['insta/sj_udon_1.jpg', 'insta/sj_udon_2.jpg'],
+            caption: '엄마와의 우동카덴 방문 후기\n\n우동에 대한 다채로운 해석을 담은 색다른 메뉴들이 매우 신선하고 퀄리티가 남달랐다ㅠㅜ\n메뉴가 너무 많아서 언젠가 다 먹어보고 싶게 만드는 느낌!!\n옥수수튀김 최고🫶',
+            comments: [
+              { who: 'monchichi_yam', text: '어휴 너 여친없냐?' },
+              { who: 'simplyjjong', text: '@monchichi_yam 사돈남말 ~ 이제 남친도 없으면서' },
+              { who: 'nikiiii', text: '형 여기 어디에요' },
+              { who: 'simplyjjong', text: '@nikiiii 글 좀 읽어라' },
+            ] },
+          { srcs: ['insta/sj_f1_1.jpg', 'insta/sj_f1_2.jpg', 'insta/sj_f1_3.jpg'],
+            caption: 'Perfect day to watch F1 in Madrid❤️💛💙\n\n🔴🐂Let\'s go Max🏆🏆🏆🏆',
+            comments: [
+              { who: 'sunghoon', text: '치즈볼남임?' },
+              { who: 'simplyjjong', text: '@sunghoon 그게 뭔데' },
+              { who: 'sunghoon', text: '@simplyjjong 니' },
+            ] },
+          { srcs: ['insta/sj_bg_1.jpg', 'insta/sj_bg_2.jpg'],
+            caption: "보드게임 마스터. 3연승의 남자 It's me🤟",
+            comments: [
+              { who: 'monchichi_yam', text: '20판중에 3판이겨놓고 마스터 ㅇㅈㄹ' },
+              { who: 'jakesim', text: '@monchichi_yam 울자기가 짱인뎅' },
+              { who: 'simplyjjong', text: '@monchichi_yam @jakesim 둘다 꺼져라' },
+              { who: 'sunghoon', text: '치즈볼남이야?' },
+              { who: 'simplyjjong', text: '@sunghoon ??' },
+            ] },
+          { srcs: ['insta/sj_pool.jpg'],
+            caption: '휴양 가고픈 날씨다',
+            comments: [
+              { who: 'sunoo._.03', text: '어렸을땐 그래도 귀여웠네용' },
+            ] },
+          { srcs: ['insta/sj_au.jpg'],
+            caption: '호주 좋군',
+            comments: [
+              { who: 'monchichi_yam', text: '초록모자남자 귀여운데 번호 좀 알려주세요' },
+              { who: 'sunghoon', text: '롤몹스있음?' },
+              { who: 'nikiiii', text: '오' },
+            ] },
+          { srcs: ['insta/sj_fly_1.jpg', 'insta/sj_fly_2.jpg'],
+            caption: 'lets goooooo!!!!!!! @jakesim',
+            comments: [
+              { who: 'monchichi_yam', text: '심재윤 놓고가' },
+              { who: 'simplyjjong', text: '@monchichi_yam 5일동안 내꺼다' },
+              { who: 'jakesim', text: '@monchichi_yam 자기야ㅏ아ㅜㅜㅜㅜ' },
+            ] },
+        ],
+      },
+      nikiiii: {
+        avatar: 'insta/av_nikiiii.jpg', story: 'insta/story_nikiiii.jpg',
+        name: '', followers: '1593', following: '23', bio: '',
+        posts: [
+          { srcs: ['insta/nk_cold.jpg'], likes: 287, likedBy: '',
+            caption: '춥다',
+            comments: [
+              { who: 'sunghoon', text: '시깅을 하지마' },
+              { who: 'nikiiii', text: '@sunghoon 새깅이라고요' },
+            ] },
+          { srcs: ['insta/nk_prada_2.jpg', 'insta/nk_prada_1.jpg'], likes: 642, likedBy: '',
+            caption: '@prada',
+            comments: [
+              { who: 'simplyjjong', text: '@sunghoon 얘는 치즈볼남 아님?' },
+              { who: 'sunghoon', text: '@simplyjjong ㅇㅇ 아님' },
+              { who: 'simplyjjong', text: '@sunghoon 왜' },
+              { who: 'sunghoon', text: '@simplyjjong 니키는 멋있잖아' },
+              { who: 'nikiiii', text: '@simplyjjong ㅋ 봤어여?' },
+              { who: 'monchichi_yam', text: '옼ㅋ 오빠 밥사주세요' },
+              { who: 'jakesim', text: '@monchichi_yam 자기야......' },
+            ] },
+          { srcs: ['insta/nk_work.jpg'], likes: 413, likedBy: '',
+            caption: '작업끝',
+            comments: [
+              { who: 'woeije', text: '헐 완전 기대' },
+              { who: 'sunoo._.03', text: '밥먹자' },
+            ] },
+          { srcs: ['insta/nk_kid.jpg'], likes: 158, likedBy: '',
+            caption: '귀요미랑',
+            comments: [
+              { who: 'monchichi_yam', text: '귀요미가 두명' },
+              { who: 'jakesim', text: '@monchichi_yam 나는 ㅡㅡ' },
+            ] },
+        ],
+      },
+      'sunoo._.03': {
+        avatar: 'insta/av_sunoo.jpg', story: 'insta/story_sunoo.jpg',
+        name: '선우', followers: '10000', following: '53', bio: '',
+        posts: [
+          { srcs: ['insta/sn_1.jpg'], likes: 4382, likedBy: '',
+            caption: '정워니가 찍어줌~',
+            comments: [
+              { who: 'yangjungwon_', text: '예아~~' },
+            ] },
+          { srcs: ['insta/sn_2.jpg', 'insta/sn_3.jpg', 'insta/sn_4.jpg', 'insta/sn_5.jpg'], likes: 7215, likedBy: '',
+            caption: '작업실에서',
+            comments: [
+              { who: 'sunghoon', text: '니키 작업실 아니야?' },
+              { who: 'sunoo._.03', text: '@sunghoon ㅇㅇ 놀러감' },
+              { who: 'nikiiii', text: '청소하고 가요 진짜;;' },
+              { who: 'jakesim', text: '오오오 잘생겼는데' },
+              { who: 'monchichi_yam', text: '@jakesim 니가 더' },
+              { who: 'sunoo._.03', text: '@monchichi_yam 뭐징..' },
+            ] },
+          { srcs: ['insta/sn_6.jpg'], likes: 5649, likedBy: '',
+            caption: '아 친누나 매형 만나는 자리 진짜 어색하다',
+            comments: [
+              { who: 'simplyjjong', text: '매형 팰기세인데..' },
+              { who: 'monchichi_yam', text: '언니 결혼하셔???ㅁㅊ!!' },
+              { who: 'jakesim', text: '@monchichi_yam 우리 언제 하지' },
+              { who: 'sunoo._.03', text: '@jakesim 나가세요' },
+            ] },
+          { srcs: ['insta/sn_7.jpg', 'insta/sn_8.jpg', 'insta/sn_9.jpg', 'insta/sn_10.jpg'], likes: 6873, likedBy: '',
+            caption: '첫눈이당',
+            comments: [
+              { who: 'yangjungwon_', text: '오 잘나왔어여의' },
+            ] },
+          { srcs: ['insta/sn_14.jpg', 'insta/sn_11.jpg', 'insta/sn_12.jpg', 'insta/sn_13.jpg'], likes: 2961, likedBy: '',
+            caption: '가평 휴가중~~',
+            comments: [
+              { who: 'monchichi_yam', text: '숙소정보' },
+              { who: 'yangjungwon_', text: '숙소정보' },
+              { who: 'nikiiii', text: '숙소정보' },
+            ] },
+        ],
+      },
+      sunghoon: {
+        avatar: 'insta/av_sunghoon.jpg', story: 'insta/story_sunghoon.jpg',
+        name: '박성훈', followers: '748', following: '21', bio: '',
+        posts: [
+          { srcs: ['insta/sh_1.jpg', 'insta/sh_2.jpg', 'insta/sh_3.jpg', 'insta/sh_4.jpg'],
+            caption: '퇴근',
+            comments: [
+              { who: 'yangjungwon_', text: '형 헬스장?' },
+              { who: 'sunghoon', text: '@yangjungwon_ ㅇㅇ ㄱㄱ' },
+              { who: 'simplyjjong', text: '으' },
+            ] },
+          { srcs: ['insta/sh_5.jpg', 'insta/sh_6.jpg'],
+            caption: '여행중',
+            comments: [
+              { who: 'eoosdi', text: '잘생겼어용' },
+              { who: 'monchichi_yam', text: 'ㅈㄴ바쁘네' },
+              { who: 'sunoo._.03', text: '맛있는 거 사와요' },
+              { who: 'nikiiii', text: '오 어디갔어요' },
+            ] },
+          { srcs: ['insta/sh_7.jpg'],
+            caption: '@jakesim 스키',
+            comments: [
+              { who: 'monchichi_yam', text: '뭘보라고 올린거임 재윤이나 올려라' },
+              { who: 'simplyjjong', text: '나보다 못타는 것들이 ㅉ' },
+            ] },
+          { srcs: ['insta/sh_8.jpg', 'insta/sh_9.jpg'],
+            caption: '헬스',
+            comments: [
+              { who: 'nikiiii', text: '3대 몇' },
+              { who: 'yangjungwon_', text: '오늘 ㄱ?' },
+            ] },
+        ],
+      },
+      jakesim: {
+        name: '심재윤', avatar: 'kakao/profile.jpg', followers: '267', following: '76',
+        bio: '@monchichi_yam ❤️',
+        highlights: [
+          /* items: 사진 경로, 또는 { src: 사진, text: '사진 위에 올릴 글' } */
+          { title: '.', cover: 'insta/hl_2.jpg', items: ['insta/hl_1.jpg', 'insta/hl_2.jpg', 'insta/hl_3.jpg', 'insta/hl_4.jpg', 'insta/hl_5.jpg',
+            { src: 'insta/hl_6.jpg', text: '올해 첫눈 같이 봤당ㅎㅎ @monchichi_yam' }] },
+        ],
+        posts: [
+          { srcs: ['insta/js_1.jpg'], likes: 214, likedBy: '',
+            caption: '자기가 제일 좋아하는 아기때 사진',
+            comments: [
+              { who: 'monchichi_yam', text: '내가낳을껄 ㅜㅜㅜㅜㅜㅜ' },
+              { who: 'sunghoon', text: '귀엽네 ㅇㅈ' },
+            ] },
+          { srcs: ['insta/js_2.jpg', 'insta/js_3.jpg'], likes: 187, likedBy: '',
+            caption: '자기랑 데이트',
+            comments: [
+              { who: 'simplyjjong', text: '어디감?' },
+              { who: 'jakesim', text: '@simplyjjong 알아서뭐하게' },
+            ] },
+          { srcs: ['insta/js_4.jpg'], likes: 243, likedBy: '',
+            caption: '니키랑 놀이공원~~~',
+            comments: [
+              { who: 'monchichi_yam', text: '@nikiiii 나한테 고맙다고 해' },
+              { who: 'sunoo._.03', text: '@monchichi_yam 왜 안감?' },
+              { who: 'monchichi_yam', text: '@sunoo._.03 일생김 ㅜㅜ' },
+              { who: 'nikiiii', text: 'ㄳ' },
+            ] },
+          { srcs: ['insta/js_5.jpg', 'insta/js_6.jpg'], likes: 256, likedBy: '',
+            caption: '@monchichi_yam ❤️',
+            comments: [
+              { who: 'monchichi_yam', text: '내 사진실력이 짱이지?' },
+              { who: 'jakesim', text: '@monchichi_yam 자기가 짱이다~~' },
+            ] },
+          { srcs: ['insta/js_9.jpg'], likes: 162, likedBy: '',
+            caption: '{name이}한테 요리해줌',
+            comments: [
+              { who: 'simplyjjong', text: '@monchichi_yam 살아있음?' },
+              { who: 'monchichi_yam', text: '맛있..더라 ㅎㅎ' },
+            ] },
+          { srcs: ['insta/js_7.jpg', 'insta/js_8.jpg'], likes: 198, likedBy: '',
+            caption: '일본여행 {name이}가 나 이거 닮았댕',
+            comments: [
+              { who: 'simplyjjong', text: '어쩌라고' },
+              { who: 'sunoo._.03', text: '모찌뿌요 사와요 형' },
+            ] },
+        ],
+      },
+    },
+    avatar: 'insta/me.jpg',   // 내 프로필 사진
+    profilePhoto: 2,
+    stories: ['jaeyuni_', 'chichi_', 'ogweof', 'wieeie', 'jimin.e', 'doyun__'],
+    posts: [
+      { src: 'insta/1.jpg', likes: 67, likedBy: 'jakesim', liked: false, time: '3주 전',
+        caption: '재윤이랑 레일라❤️ 내 사랑둥이들',
+        comments: [{ who: 'jakesim', text: '언제 찍었대ㅋㅋㅋ' }] },
+      { src: 'insta/2.jpg', likes: 34, likedBy: '', liked: false, time: '2개월 전',
+        caption: '혼자 꾸꾸로 나와서 삐짐ㅋㅋ 아니 이렇게 꾸민다고는 안했자나ㅜㅜ',
+        comments: [{ who: 'simplyjjong', text: '니 뭐입음?' }, { who: 'monchichi_yam', text: '@simplyjjong 츄리닝ㅜㅜ' }, { who: 'sunghoon', text: '에겐남이네 이런거에 삐지고' }] },
+      { srcs: ['insta/3c.jpg', 'insta/3a.jpg', 'insta/3b.jpg'], likes: 45, likedBy: '', liked: false, time: '9개월 전',
+        caption: '나 얘없이는 못 살 것 같아ㅜㅜ',
+        comments: [{ who: 'simplyjjong', text: '그래' }] },
+      { src: 'insta/4.jpg', likes: 55, likedBy: '', liked: false, time: '1년 전',
+        caption: '결혼하자',
+        comments: [{ who: 'jakesim', text: 'yesssss' }] },
+    ],
+    activity: [
+      { who: 'wieeie', text: '님이 회원님의 게시물을 좋아합니다.', time: '1분', photo: 5 },
+      { who: 'ogweof', text: '님이 댓글을 남겼습니다: 오 니 이거 개잘나옴', time: '3분', photo: 5 },
+      { who: 'jaeyuni_', text: '님이 회원님의 스토리를 좋아합니다.', time: '1시간' },
+      { who: 'chichi_', text: '님이 회원님을 팔로우하기 시작했습니다.', time: '5시간' },
+    ],
+    dms: [
+      /* triggers: 이 말을 보내면(띄어쓰기 무시) replies 가 순서대로 와요. deletePosts: true 면 그 계정 게시물이 전부 사라져요 */
+      { who: 'jakesim', text: '', time: '어제', chat: [],
+        canType: true,
+        triggers: [{ when: '내가 찍어준 사진 다 내려줘', keywords: ['사진', '내려'], replies: ['응', '미안해'], deletePosts: true }] },
+      { who: 'chichi_', text: '아 샤갈 개추워 얼어뒤진다 오늘', time: '지금', unread: true },
+      { who: 'ogweof', text: '오 니 이거 개잘나옴', time: '지금', unread: true },
+      { who: 'jaeyuni_', text: '릴스를 보냈습니다', time: '1시간' },
+      { who: 'jimin.e', text: 'ㅋㅋㅋㅋㅋ 미쳤다', time: '어제' },
+    ],
+  },
+
+  /* ---------- 메시지 ----------
+     chat: 이미 주고받은 대화. from: 'me'(내가 보낸 것) / 'them'(상대)
+           { divider: '...' } 는 가운데 작은 날짜 글씨
+     incoming: 대화방을 처음 열면 상대가 "입력 중..." 후 보내는 메시지
+     autoReplies: 내가 직접 입력해서 보내면 돌아오는 답장 (순서대로) */
+  messages: [],
+
+  /* ---------- 예약 문자 ----------
+     잠금 해제 후 휴대폰을 delay(밀리초)만큼 쓰면 이 문자가 도착해요 */
+  scheduledMessage: {
+    delay: 90000,
+    name: '재윤이', love: true,
+    divider: '오늘 오전 11:15',
+    texts: [
+      '자기~~자구있나? 600일 기념으로 예약메세지했는데 잘갔는지 모르겠네',
+      '600일 축하해 자기야',
+      '앞으로도 계속 사랑하자',
+    ],
+    gap: 1500,
+    dayCountAfter: 600,   // 첫 문자가 오면 홈 위젯 날짜가 이 숫자로 바뀌어요
+  },
+
+  /* ---------- 사진 ----------
+     src: 사진 파일 경로 (index.html 옆 photos 폴더). 비워두면 예쁜 색으로 채워져요 */
+  photoAlbum: { title: '우리의 추억', subtitle: '2025년 10월 – 2026년 10월' },
+  photos: [
+    { src: 'gallery/1.jpg', date: '', caption: '' },
+    { src: 'gallery/2.jpg', date: '', caption: '' },
+    { src: 'gallery/3.jpg', date: '', caption: '' },
+    { src: 'gallery/4.jpg', date: '', caption: '' },
+    { src: 'gallery/5.jpg', date: '', caption: '' },
+    { src: 'gallery/6.jpg', date: '', caption: '' },
+    { src: 'gallery/7.jpg', date: '', caption: '' },
+    { src: 'gallery/8.jpg', date: '', caption: '' },
+    { src: 'gallery/9.jpg', date: '', caption: '' },
+    { src: 'gallery/10.jpg', date: '', caption: '' },
+    { src: 'gallery/11.jpg', date: '', caption: '' },
+    { src: 'gallery/12.jpg', date: '', caption: '' },
+    { src: 'gallery/13.jpg', date: '', caption: '' },
+    { src: 'gallery/14.jpg', date: '', caption: '' },
+    { src: 'gallery/15.jpg', date: '', caption: '' },
+    { src: 'gallery/16.jpg', date: '', caption: '' },
+    { src: 'gallery/19.jpg', date: '', caption: '' },
+    { src: 'gallery/21.jpg', date: '', caption: '' },
+    { src: 'gallery/22.jpg', date: '', caption: '' },
+    { src: 'gallery/23.jpg', date: '', caption: '' },
+    { src: 'gallery/24.jpg', date: '', caption: '' },
+    { src: 'gallery/25.jpg', date: '', caption: '' },
+    { src: 'gallery/26.jpg', date: '', caption: '' },
+    { src: 'gallery/27.jpg', date: '', caption: '' },
+    { src: 'gallery/28.jpg', date: '', caption: '' },
+    { src: 'gallery/29.jpg', date: '', caption: '' },
+    { src: 'gallery/30.jpg', date: '', caption: '' },
+    { src: 'gallery/31.jpg', date: '', caption: '' },
+    { src: 'gallery/32.jpg', date: '', caption: '' },
+    { src: 'gallery/33.jpg', date: '', caption: '' },
+  ],
+
+  /* 홈 화면 위젯·인스타그램에서 쓰는 사진 (갤러리에는 안 보여요) */
+  otherPhotos: [
+    { src: 'photos/1.png', date: '2025년 10월 9일',  caption: '사귀기로 한 날 본 노을. 사진보다 네 옆모습을 더 오래 봤어.' },
+    { src: 'photos/2.png', date: '2025년 11월 1일',  caption: '{boyfriend}가 처음 사 준 꽃. 꽃집 앞에서 10분 동안 고민했대.' },
+    { src: 'photos/3.png', date: '2025년 12월 24일', caption: '카페에서 몰래 찍은 너. 들킬까 봐 심장 터지는 줄 알았어.' },
+    { src: 'photos/4.png', date: '2026년 1월 16일',  caption: '100일 커플링. 아직도 가끔 손 보고 혼자 웃어.' },
+    { src: 'photos/5.png', date: '2026년 6월 28일',  caption: '우산 하나로 같이 걸은 날. 네 어깨 다 젖었던 거 알아.' },
+    { src: 'photos/6.png', date: '2026년 8월 15일',  caption: '여름 바다. 다음에도 꼭 같이 오자고 새끼손가락 걸었지.' },
+  ],
+
+  /* ---------- 메모 ---------- pinned: true 면 "고정됨"에 보여요 */
+  notes: [
+    {
+      pinned: true, title: '재윤이한테 하고 싶은 말', date: '2026. 10. 19.',
+      body: '재윤아.\n요즘 너한테 연락이 오면 반가운 마음보다 오늘은 몇 시간 만에 답장이 올까 하는 생각이 먼저 들어. 예전엔 자기 전에 꼭 전화하던 사람이 이제는 피곤해 먼저 잘게 한 줄이면 끝이고, 주말 약속도 한 번씩 미뤄지는 게 이제 그렇게 놀랍지도 않아.\n처음엔 내가 예민한 거라고 생각했어. 너도 요즘 바쁘다고 했고, 600일 가까이 만났으니까 처음처럼 매일 설렐 수는 없는 거라고. 그게 권태기라는 거면 나는 기다릴 수 있어. 같이 노력하면 지나가는 거라고 믿고 싶어.\n근데 가끔은 그게 아닐까 봐 무서워. 네가 나를 보는 눈이 예전이랑 달라진 것 같고, 같이 있어도 핸드폰만 보고 있을 때면 내가 너한테 이제 익숙한 사람이 아니라 귀찮은 사람이 된 건 아닐까 싶어.\n그래서 물어보고 싶어. 지금 우리, 잠깐 지쳐 있는 거야? 아니면 너는 이미 마음이 정리되고 있는 거야?\n솔직하게 말해줬으면 좋겠어. 권태기라면 같이 이겨내 보자. 데이트도 다시 예전처럼 하고, 서운한 건 그때그때 말할게. 근데 만약 헤어지고 싶은 거라면… 그것도 숨기지 말고 말해줘. 아무것도 모른 채로 혼자 기다리는 게 제일 힘들어.\n나는 아직 너 많이 좋아해.\n그래서 더 확실하게 알고 싶어.',
+    },
+  ],
+
+  /* ---------- 전화 (최근 통화) ----------
+     type: incoming(수신) / outgoing(발신) / missed(부재중), count: 여러 번이면 숫자 */
+  calls: [
+    { name: '{boyfriend}', type: 'missed',   count: 2, time: '오후 11:59' },
+    { name: '{boyfriend}', type: 'outgoing', time: '오후 10:31', duration: '1시간 42분' },
+    { name: '엄마',        type: 'incoming', time: '오후 6:12',  duration: '4분' },
+    { name: '{boyfriend}', type: 'incoming', time: '어제',       duration: '2시간 8분' },
+    { name: '지민',        type: 'outgoing', time: '어제',       duration: '23분' },
+    { name: '{boyfriend}', type: 'incoming', time: '수요일',     duration: '3시간 5분' },
+    { name: '{boyfriend}', type: 'missed',   time: '화요일' },
+    { name: '{boyfriend}', type: 'outgoing', time: '월요일',     duration: '57분' },
+  ],
+
+  /* ---------- 검색기록 ---------- */
+  searches: [
+    { q: '남자친구 400일 선물 추천',          time: '오후 11:41' },
+    { q: '연애 1년 차인데 아직도 설레는 거 정상?', time: '오후 11:12' },
+    { q: '{boyfriend} {name} 이름 궁합',      time: '오후 10:50' },
+    { q: '보고 싶다 영어로 귀엽게',            time: '오후 4:03' },
+    { q: '커플 사진 포즈 자연스럽게',          time: '어제' },
+    { q: '분위기 좋은 카페 을지로',            time: '어제' },
+    { q: '남자친구 생일 서프라이즈 아이디어',  time: '수요일' },
+    { q: '첫눈 오는 날 예보',                  time: '월요일' },
+  ],
+};
+</script>
+</body>
+</html>
